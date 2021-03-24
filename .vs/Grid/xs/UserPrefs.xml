@@ -1,0 +1,16 @@
+﻿<Properties StartupConfiguration="{C6ACF092-1F58-20C9-8A72-B3244B32DFEC}|">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/Tomicz/Scripts/OptimizedGrid.cs">
+    <Files>
+      <File FileName="Assets/Tomicz/Scripts/OptimizedGrid.cs" Line="1" Column="1" />
+      <File FileName="Assets/Tomicz/Scripts/Quad.cs" Line="43" Column="6" />
+      <File FileName="Assets/Tomicz/Scripts/MeshGenerator.cs" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.ItemProperties.Assembly-CSharp PreferredExecutionTarget="60396de5-6cca-47ec-94c8-f399e0b8d9fe" />
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MultiItemStartupConfigurations />
+</Properties>
