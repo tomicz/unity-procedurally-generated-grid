@@ -4,33 +4,42 @@ Optimized grid is a procedural grid and it is a great alternative to Unity's gri
 
 # How to use
 
-`
-    using Tomicz.Grid;
-		
-		private Mesh _mesh;
-		private OptimizedGrid _grid;
-		
-    private void Start()
-    {
-				// Make sure you have MeshFilter and MeshRnderer attached to this gameObject.
-				_mesh = GetComponent<MeshFilter>().mesh = _mesh;
-				
-        // Create an instance of a grid
-        _grid = new OptimizedGrid(gridWidth, gridHeight, nodeWidth, nodeHeight, spacing);
-    
-        // This created necessary data when instance created.
-				// Always clal after the instance.
-				_grid.GenerateGrid();
-				
-				LoadData(_mesh);
-    }
-		
-		private void LoadData(Mesh mesh)
-		{
-				mesh.vertices = _grid.Vertices;
-        mesh.triangles = _grid.Triangles;
+```
+using Tomicz.Grid;
+```	
 
-        mesh.RecalculateNormals();
-        mesh.RecalculateBounds();
-		}
-`
+Add reference depenencies. Make sure you have MeshFilter and MeshRenderer attached to the gameObject.
+```
+private Mesh _mesh;
+private OptimizedGrid _grid;
+```
+You can also use this inside an update with [ExecuteInEditMode]. If your application or game needs the grid to be updated in real time, then it's the best to update it with sliders or some other input. 
+```		
+private void Start()
+{
+	// Get dependencies
+	_mesh = GetComponent<MeshFilter>().mesh = _mesh;
+
+	// Create an instance of a grid
+	_grid = new OptimizedGrid(gridWidth, gridHeight, nodeWidth, nodeHeight, spacing);
+
+	// Always clal after the instance.
+	_grid.GenerateGrid();
+	
+	// Loads vertices and triangles to a mesh
+	LoadData(_mesh);
+}
+
+```
+
+This method will load triangles and vertices into the mesh. Also, it will recalculate all the normals.
+```
+private void LoadData(Mesh mesh)
+{
+	mesh.vertices = _grid.Vertices;
+	mesh.triangles = _grid.Triangles;
+
+	mesh.RecalculateNormals();
+	mesh.RecalculateBounds();
+}
+```
