@@ -4,6 +4,7 @@ Optimized grid is a procedural grid and it is a great alternative to Unity's gri
 
 # How to use
 
+Do not forget to add a namespace.
 ```
 using Tomicz.Grid;
 ```	
