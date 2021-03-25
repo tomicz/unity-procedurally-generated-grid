@@ -1,4 +1,4 @@
-![](https://imgur.com/WOrobNf)
+<img src="https://imgur.com/WOrobNf" alt="Databay showcase gif" title="Example gif" width="500"/>
 
 # About
 
