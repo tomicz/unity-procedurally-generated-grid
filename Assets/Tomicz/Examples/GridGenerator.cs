@@ -34,6 +34,5 @@ public class GridGenerator : MonoBehaviour
         mesh.triangles = _grid.Triangles;
 
         mesh.RecalculateNormals();
-        mesh.RecalculateBounds();
     }
 }
