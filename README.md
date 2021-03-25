@@ -1,4 +1,4 @@
-<img src="https://imgur.com/WOrobNf" alt="Databay showcase gif" title="Example gif" width="500"/>
+<img src="https://media.giphy.com/media/mdFObXCvTojzmWnQvf/giphy.gif" alt="Databay showcase gif" title="Example gif" width="500"/>
 
 # About
 
