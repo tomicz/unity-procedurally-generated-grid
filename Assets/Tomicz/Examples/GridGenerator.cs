@@ -16,14 +16,14 @@ public class GridGenerator : MonoBehaviour
 
     [SerializeField] private float nodeHeight = 1f;
 
-    private Mesh mesh = null;
+    private Mesh _mesh = null;
 
     private OptimizedGrid _grid;
 
     private void Awake()
     {
-        mesh = GetComponent<MeshFilter>().mesh;
-        mesh.name = "Grid Mesh";
+        _mesh = GetComponent<MeshFilter>().sharedMesh;
+        _mesh.name = "Grid Mesh";
     }
 
     private void Update()
@@ -36,9 +36,9 @@ public class GridGenerator : MonoBehaviour
 
     private void LoadMeshData()
     {
-        mesh.vertices = _grid.Vertices;
-        mesh.triangles = _grid.Triangles;
+        _mesh.vertices = _grid.Vertices;
+        _mesh.triangles = _grid.Triangles;
 
-        mesh.RecalculateNormals();
+        _mesh.RecalculateNormals();
     }
 }
