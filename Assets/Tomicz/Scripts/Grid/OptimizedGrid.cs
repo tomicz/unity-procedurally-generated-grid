@@ -6,7 +6,7 @@ namespace Tomicz.Grid
 {
     public class OptimizedGrid
     {
-        // Public fields
+        #region Public Fields
 
         public int gridWidth;
 
@@ -33,6 +33,9 @@ namespace Tomicz.Grid
         /// </summary>
         public int[] Triangles => _trianglesList.ToArray();
 
+        #endregion
+
+        #region Private Fields
 
         // Private fields
 
@@ -43,6 +46,8 @@ namespace Tomicz.Grid
         private const int AngleOffset = 4;
 
         private List<int> _trianglesList;
+
+        #endregion
 
         /// <summary>
         /// Creates an instance of a grid.
@@ -78,14 +83,16 @@ namespace Tomicz.Grid
         }
 
         /// <summary>
-        /// Stores triangles and vertices to a list
+        /// Stores triangles and vertices insade a list.
         /// </summary>
-        /// <param name="index"></param>
-        /// <param name="quad"></param>
+        /// <param name="index">Quad index.</param>
+        /// <param name="quad">Quad object.</param>
         private void AddQuadData(int index, Quad quad)
         {
+            var newQuadTriangle = AngleOffset * index;
+
             _verticesList.AddRange(quad.GetVerticesData());
-            _trianglesList.AddRange(quad.GetTriangle(AngleOffset * index, AngleOffset * index, AngleOffset * index, AngleOffset * index));
+            _trianglesList.AddRange(quad.GetTriangle(newQuadTriangle, newQuadTriangle, newQuadTriangle, newQuadTriangle));
         }
 
         /// <summary>
@@ -102,12 +109,15 @@ namespace Tomicz.Grid
         /// <summary>
         /// Create a new quad shape.
         /// </summary>
-        /// <param name="x">2D Array position X</param>
-        /// <param name="y">2D Array position y</param>
+        /// <param name="x">Quad position insde a 2D array list on X axis</param>
+        /// <param name="y">Quad position insde a 2D array list on Y axis</param>
         /// <returns></returns>
         private Quad CreateNewQuad(int x, int y)
         {
-            Quad quad = new Quad(x * (nodeWidth + spacing), y * (nodeHeight + spacing), nodeWidth, nodeHeight);
+            var positionX = x * (nodeWidth + spacing);
+            var positionY = y * (nodeHeight + spacing);
+
+            Quad quad = new Quad(positionX, positionY, nodeWidth, nodeHeight);
             _quadArray[x, y] = quad;
             return quad;
         }
