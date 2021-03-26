@@ -1,6 +1,6 @@
 
 <p align="center">
-<img src="https://media.giphy.com/media/mdFObXCvTojzmWnQvf/giphy.gif" alt="Databay showcase gif" title="Example gif" width="500"/>
+<img src="https://media.giphy.com/media/mdFObXCvTojzmWnQvf/giphy.gif" alt="Grid animation" title="Grid GIF" width="500"/>
 </p>
 
 # About
@@ -48,3 +48,9 @@ private void LoadMeshData(Mesh mesh)
 	mesh.RecalculateNormals();
 }
 ```
+
+# Limitations
+
+* Unity only allows 55k vertices per object, which means that you will be able only to display up to 14400 quads.
+
+* Each quad contains 6 angles or two triangles and it's possible to reach an integer limit. Unity mesh triangles only support integer numbers. 
