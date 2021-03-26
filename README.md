@@ -51,6 +51,6 @@ private void LoadMeshData(Mesh mesh)
 
 # Limitations
 
-* Unity only allows 55k vertices per object, which means that you will be able only to display up to 14400 quads.
+* Unity only allows 55k vertices per object, which means that you will be able to only display up to 14400 quads.
 
 * Each quad contains 6 angles or two triangles and it's possible to reach an integer limit. Unity mesh triangles only support integer numbers. 
