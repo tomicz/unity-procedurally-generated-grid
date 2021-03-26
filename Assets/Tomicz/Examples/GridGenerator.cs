@@ -26,7 +26,7 @@ public class GridGenerator : MonoBehaviour
         _mesh.name = "Grid Mesh";
     }
 
-    private void Update()
+    private void OnValidate()
     {
         _grid = new OptimizedGrid(gridWidth, gridHeight, nodeWidth, nodeHeight, spacing);
         _grid.GenerateGrid();
