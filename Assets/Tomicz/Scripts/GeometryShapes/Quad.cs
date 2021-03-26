@@ -2,6 +2,7 @@ using UnityEngine;
 
 namespace Tomicz.GeometryShapes
 {
+    [System.Serializable]
     public class Quad
     {
         public float x;
