@@ -33,19 +33,18 @@ private void Start()
 	_grid.GenerateGrid();
 	
 	// Loads vertices and triangles to a mesh
-	LoadData(_mesh);
+	LoadMeshData(_mesh);
 }
 
 ```
 
 This method will load triangles and vertices into the mesh. Also, it will recalculate all the normals.
 ```
-private void LoadData(Mesh mesh)
+private void LoadMeshData(Mesh mesh)
 {
 	mesh.vertices = _grid.Vertices;
 	mesh.triangles = _grid.Triangles;
 
 	mesh.RecalculateNormals();
-	mesh.RecalculateBounds();
 }
 ```
