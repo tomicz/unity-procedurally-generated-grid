@@ -19,19 +19,21 @@ namespace Tomicz.Grid
         public float spacing;
 
         /// <summary>
-        /// Get all nodes
+        /// Get all procedural quads.
         /// </summary>
-        public Quad[,] Nodes => _quadArray;
+        public Quad[,] Quads => _quadArray;
 
         /// <summary>
-        /// Get all vretices data.
+        /// Get all vretices data in the grid.
         /// </summary>
         public Vector3[] Vertices => _verticesList.ToArray();
 
         /// <summary>
-        /// Get all triangles data
+        /// Get all triangles data in the grid.
         /// </summary>
         public int[] Triangles => _trianglesList.ToArray();
+
+        public Node[,] Nodes => _nodeList;
 
         #endregion
 
@@ -46,6 +48,8 @@ namespace Tomicz.Grid
         private const int AngleOffset = 4;
 
         private List<int> _trianglesList;
+
+        private Node[,] _nodeList;
 
         #endregion
 
@@ -77,22 +81,10 @@ namespace Tomicz.Grid
             {
                 for (int y = 0; y < gridHeight; y++, i++)
                 {
-                    AddQuadData(i, CreateNewQuad(x, y));
+                    SortQuadData(i, AddQuad(x, y));
+                    AddNode(x, y);
                 }
             }
-        }
-
-        /// <summary>
-        /// Stores triangles and vertices insade a list.
-        /// </summary>
-        /// <param name="index">Quad index.</param>
-        /// <param name="quad">Quad object.</param>
-        private void AddQuadData(int index, Quad quad)
-        {
-            var newQuadTriangle = AngleOffset * index;
-
-            _verticesList.AddRange(quad.GetVerticesData());
-            _trianglesList.AddRange(quad.GetTriangle(newQuadTriangle, newQuadTriangle, newQuadTriangle, newQuadTriangle));
         }
 
         /// <summary>
@@ -103,6 +95,20 @@ namespace Tomicz.Grid
             _quadArray = new Quad[gridWidth, gridHeight];
             _trianglesList = new List<int>();
             _verticesList = new List<Vector3>();
+            _nodeList = new Node[gridWidth, gridHeight];
+        }
+
+        /// <summary>
+        /// Stores triangles and vertices insade a list.
+        /// </summary>
+        /// <param name="index">Quad index.</param>
+        /// <param name="quad">Quad object.</param>
+        private void SortQuadData(int index, Quad quad)
+        {
+            var newQuadTriangle = AngleOffset * index;
+
+            _verticesList.AddRange(quad.GetVerticesData());
+            _trianglesList.AddRange(quad.GetTriangle(newQuadTriangle, newQuadTriangle, newQuadTriangle, newQuadTriangle));
         }
 
 
@@ -112,7 +118,7 @@ namespace Tomicz.Grid
         /// <param name="x">Quad position insde a 2D array list on X axis</param>
         /// <param name="y">Quad position insde a 2D array list on Y axis</param>
         /// <returns></returns>
-        private Quad CreateNewQuad(int x, int y)
+        private Quad AddQuad(int x, int y)
         {
             var positionX = x * (nodeWidth + spacing);
             var positionY = y * (nodeHeight + spacing);
@@ -121,5 +127,13 @@ namespace Tomicz.Grid
             _quadArray[x, y] = quad;
             return quad;
         }
+
+
+        /// <summary>
+        /// Add a new node to nodes list. 
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        private void AddNode(int x, int y) => _nodeList[x, y] = new Node(x, y);
     }
 }

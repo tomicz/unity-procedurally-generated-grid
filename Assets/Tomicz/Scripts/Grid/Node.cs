@@ -1,5 +1,6 @@
 namespace Tomicz.Grid
 {
+    [System.Serializable]
     public struct Node
     {
         public int x;
