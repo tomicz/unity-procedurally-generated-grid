@@ -11,7 +11,7 @@ public class GridGenerator : MonoBehaviour
     [SerializeField] private int gridHeight;
 
     [SerializeField] private float spacing = .1f;
-
+    
     [SerializeField] private float nodeWidth = 1f;
 
     [SerializeField] private float nodeHeight = 1f;
@@ -36,6 +36,8 @@ public class GridGenerator : MonoBehaviour
 
     private void LoadMeshData()
     {
+        _mesh.Clear();
+
         _mesh.vertices = _grid.Vertices;
         _mesh.triangles = _grid.Triangles;
 
