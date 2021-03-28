@@ -40,12 +40,14 @@ private void Start()
 
 This method will load triangles and vertices into the mesh. Also, it will recalculate all the normals.
 ```
-private void LoadMeshData(Mesh mesh)
+private void LoadMeshData()
 {
-	mesh.vertices = _grid.Vertices;
-	mesh.triangles = _grid.Triangles;
+    _mesh.Clear();
 
-	mesh.RecalculateNormals();
+    _mesh.vertices = _grid.Vertices;
+    _mesh.triangles = _grid.Triangles;
+
+    _mesh.RecalculateNormals();
 }
 ```
 
