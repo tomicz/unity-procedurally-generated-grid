@@ -24,7 +24,7 @@ You can also use this inside an update with [ExecuteInEditMode]. If your applica
 private void Start()
 {
 	// Get dependencies
-	_mesh = GetComponent<MeshFilter>().mesh = _mesh;
+	_mesh = GetComponent<MeshFilter>().sharedMesh;
 
 	// Create an instance of a grid
 	_grid = new OptimizedGrid(gridWidth, gridHeight, nodeWidth, nodeHeight, spacing);
