@@ -16,6 +16,8 @@ public class GridGenerator : MonoBehaviour
 
     [SerializeField] private float nodeHeight = 1f;
 
+    [SerializeField] private GridPosition gridPosition;
+
     private Mesh _mesh = null;
 
     private OptimizedGrid _grid;
@@ -29,7 +31,7 @@ public class GridGenerator : MonoBehaviour
     private void OnValidate()
     {
         _grid = new OptimizedGrid(gridWidth, gridHeight, nodeWidth, nodeHeight, spacing);
-        _grid.GenerateGrid();
+        _grid.GenerateGrid(gridPosition);
 
         LoadMeshData();
     }

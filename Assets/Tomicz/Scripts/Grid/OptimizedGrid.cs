@@ -4,6 +4,12 @@ using UnityEngine;
 
 namespace Tomicz.Grid
 {
+    public enum GridPosition
+    {
+        Default,
+        Center
+    }
+
     public class OptimizedGrid
     {
         #region Public Fields
@@ -73,7 +79,7 @@ namespace Tomicz.Grid
         /// <summary>
         /// Generates a new grid when called.
         /// </summary>
-        public void GenerateGrid()
+        public void GenerateGrid(GridPosition position)
         {
             InitilizeDataContainers();
 
@@ -81,7 +87,7 @@ namespace Tomicz.Grid
             {
                 for (int y = 0; y < gridHeight; y++, i++)
                 {
-                    SortQuadData(i, AddQuad(x, y));
+                    SortQuadData(i, AddQuad(x, y, position));
                     AddNode(x, y);
                 }
             }
@@ -118,12 +124,12 @@ namespace Tomicz.Grid
         /// <param name="x">Quad position insde a 2D array list on X axis</param>
         /// <param name="y">Quad position insde a 2D array list on Y axis</param>
         /// <returns></returns>
-        private Quad AddQuad(int x, int y)
+        private Quad AddQuad(int x, int y, GridPosition position)
         {
             var positionX = x * (nodeWidth + spacing);
             var positionY = y * (nodeHeight + spacing);
 
-            Quad quad = new Quad(positionX, positionY, nodeWidth, nodeHeight);
+            Quad quad = new Quad(positionX - GridOffsetX(position), positionY - GridOffsetY(position), nodeWidth, nodeHeight);
             _quadArray[x, y] = quad;
             return quad;
         }
@@ -135,5 +141,22 @@ namespace Tomicz.Grid
         /// <param name="x"></param>
         /// <param name="y"></param>
         private void AddNode(int x, int y) => _nodeList[x, y] = new Node(x, y);
+
+        private int UpdateGridPosition(GridPosition position)
+        {
+            switch (position)
+            {
+                case GridPosition.Default:
+                    return 1;
+                case GridPosition.Center:
+                    return 2;
+            }
+
+            return 1;
+        }
+
+        private int GridOffsetX(GridPosition position) => gridWidth / UpdateGridPosition(position);
+
+        private int GridOffsetY(GridPosition position) => gridHeight / UpdateGridPosition(position);
     }
 }
