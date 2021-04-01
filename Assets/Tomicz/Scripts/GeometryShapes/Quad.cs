@@ -10,13 +10,6 @@ namespace Tomicz.GeometryShapes
         public float width;
         public float height;
 
-        /// <summary>
-        /// Generate a new mesh of quad shape.
-        /// </summary>
-        /// <param name="x">Position x.</param>
-        /// <param name="y">Position y.</param>
-        /// <param name="width">Shape width</param>
-        /// <param name="height">Shape height</param>
         public Quad(float x, float y, float width, float height)
         {
             this.x = x;
@@ -25,14 +18,6 @@ namespace Tomicz.GeometryShapes
             this.height = height;
         }
 
-        /// <summary>
-        /// Returns triangles.
-        /// </summary>
-        /// <param name="a0">Angle 0</param>
-        /// <param name="a1">Angle 1</param>
-        /// <param name="a2">Angle 2</param>
-        /// <param name="a3">Angle 3</param>
-        /// <returns></returns>
         public int[] GetTriangle(int a0, int a1, int a2, int a3)
         {
             int[] triangles = new int[6]
@@ -44,10 +29,6 @@ namespace Tomicz.GeometryShapes
             return triangles;
         }
 
-        /// <summary>
-        /// Returns vertices in vectors.
-        /// </summary>
-        /// <returns></returns>
         public Vector3[] GetVerticesData()
         {
             Vector3[] vertices = new Vector3[4]

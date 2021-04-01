@@ -4,16 +4,8 @@ using UnityEngine;
 
 namespace Tomicz.Grid
 {
-    public enum GridPosition
-    {
-        Default,
-        Center
-    }
-
     public class OptimizedGrid
     {
-        #region Public Fields
-
         public int gridWidth;
 
         public int gridHeight;
@@ -24,28 +16,13 @@ namespace Tomicz.Grid
 
         public float spacing;
 
-        /// <summary>
-        /// Get all procedural quads.
-        /// </summary>
         public Quad[,] Quads => _quadArray;
 
-        /// <summary>
-        /// Get all vretices data in the grid.
-        /// </summary>
         public Vector3[] Vertices => _verticesList.ToArray();
 
-        /// <summary>
-        /// Get all triangles data in the grid.
-        /// </summary>
         public int[] Triangles => _trianglesList.ToArray();
 
         public Node[,] Nodes => _nodeList;
-
-        #endregion
-
-        #region Private Fields
-
-        // Private fields
 
         private List<Vector3> _verticesList;
 
@@ -57,16 +34,6 @@ namespace Tomicz.Grid
 
         private Node[,] _nodeList;
 
-        #endregion
-
-        /// <summary>
-        /// Creates an instance of a grid.
-        /// </summary>
-        /// <param name="gridWidth">Max grid width.</param>
-        /// <param name="gridHeight">Max grid height.</param>
-        /// <param name="nodeWidth">Single node width.</param>
-        /// <param name="nodeHeight">Single node height</param>
-        /// <param name="spacing">Spacing between nodes.</param>
         public OptimizedGrid(int gridWidth, int gridHeight, float nodeWidth, float nodeHeight, float spacing)
         {
             this.gridWidth = gridWidth;
@@ -76,10 +43,7 @@ namespace Tomicz.Grid
             this.spacing = spacing;
         }
 
-        /// <summary>
-        /// Generates a new grid when called.
-        /// </summary>
-        public void GenerateGrid(GridPosition position)
+        public void GenerateGrid()
         {
             InitilizeDataContainers();
 
@@ -87,15 +51,12 @@ namespace Tomicz.Grid
             {
                 for (int y = 0; y < gridHeight; y++, i++)
                 {
-                    SortQuadData(i, AddQuad(x, y, position));
+                    SortQuadData(i, AddQuad(x, y));
                     AddNode(x, y);
                 }
             }
         }
 
-        /// <summary>
-        /// Initilizes data containers.
-        /// </summary>
         private void InitilizeDataContainers()
         {
             _quadArray = new Quad[gridWidth, gridHeight];
@@ -104,11 +65,6 @@ namespace Tomicz.Grid
             _nodeList = new Node[gridWidth, gridHeight];
         }
 
-        /// <summary>
-        /// Stores triangles and vertices insade a list.
-        /// </summary>
-        /// <param name="index">Quad index.</param>
-        /// <param name="quad">Quad object.</param>
         private void SortQuadData(int index, Quad quad)
         {
             var newQuadTriangle = AngleOffset * index;
@@ -117,46 +73,16 @@ namespace Tomicz.Grid
             _trianglesList.AddRange(quad.GetTriangle(newQuadTriangle, newQuadTriangle, newQuadTriangle, newQuadTriangle));
         }
 
-
-        /// <summary>
-        /// Create a new quad shape.
-        /// </summary>
-        /// <param name="x">Quad position insde a 2D array list on X axis</param>
-        /// <param name="y">Quad position insde a 2D array list on Y axis</param>
-        /// <returns></returns>
-        private Quad AddQuad(int x, int y, GridPosition position)
+        private Quad AddQuad(int x, int y)
         {
-            var positionX = x * (nodeWidth + spacing);
-            var positionY = y * (nodeHeight + spacing);
+            var nodeX = x * (nodeWidth + spacing);
+            var nodeY = y * (nodeHeight + spacing);
 
-            Quad quad = new Quad(positionX - GridOffsetX(position), positionY - GridOffsetY(position), nodeWidth, nodeHeight);
+            Quad quad = new Quad(nodeX, nodeY, nodeWidth, nodeHeight);
             _quadArray[x, y] = quad;
             return quad;
         }
 
-
-        /// <summary>
-        /// Add a new node to nodes list. 
-        /// </summary>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
         private void AddNode(int x, int y) => _nodeList[x, y] = new Node(x, y);
-
-        private int UpdateGridPosition(GridPosition position)
-        {
-            switch (position)
-            {
-                case GridPosition.Default:
-                    return 1;
-                case GridPosition.Center:
-                    return 2;
-            }
-
-            return 1;
-        }
-
-        private int GridOffsetX(GridPosition position) => gridWidth / UpdateGridPosition(position);
-
-        private int GridOffsetY(GridPosition position) => gridHeight / UpdateGridPosition(position);
     }
 }
