@@ -18,28 +18,26 @@ namespace Tomicz.GeometryShapes
             this.height = height;
         }
 
-        public int[] GetTriangle(int a0, int a1, int a2, int a3)
+        public int[] GetTriangles(int nextAngleMultiplier)
         {
             int[] triangles = new int[6]
             {
-            0 + a0, 1 + a1, 2 + a2,
-            2 + a2, 1 + a1, 3 + a3
+                  0 + nextAngleMultiplier, 1 + nextAngleMultiplier, 2 + nextAngleMultiplier,
+                  2 + nextAngleMultiplier, 1 + nextAngleMultiplier, 3 + nextAngleMultiplier
             };
 
             return triangles;
         }
 
-        public Vector3[] GetVerticesData()
+        public Vector3[] GetVerticies()
         {
-            Vector3[] vertices = new Vector3[4]
+            return new Vector3[4]
             {
-            new Vector3(x, y, 0),
-            new Vector3(x, y + height, 0),
-            new Vector3(x + width, y, 0),
-            new Vector3(x + width, y + height, 0),
+                new Vector3(x, y, 0),
+                new Vector3(x, y + height, 0),
+                new Vector3(x + width, y, 0),
+                new Vector3(x + width, y + height, 0),
             };
-
-            return vertices;
         }
     }
 }
