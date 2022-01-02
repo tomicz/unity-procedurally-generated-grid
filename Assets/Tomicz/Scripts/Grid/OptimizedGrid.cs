@@ -16,23 +16,15 @@ namespace Tomicz.Grid
 
         public float spacing;
 
-        public Quad[,] Quads => _quadArray;
-
         public Vector3[] Vertices => _verticesList.ToArray();
 
         public int[] Triangles => _trianglesList.ToArray();
 
-        public Node[,] Nodes => _nodeList;
+        private const int AngleOffset = 4;
 
         private List<Vector3> _verticesList;
 
-        private Quad[,] _quadArray;
-
-        private const int AngleOffset = 4;
-
         private List<int> _trianglesList;
-
-        private Node[,] _nodeList;
 
         public OptimizedGrid(int gridWidth, int gridHeight, float nodeWidth, float nodeHeight, float spacing)
         {
@@ -52,37 +44,38 @@ namespace Tomicz.Grid
                 for (int y = 0; y < gridHeight; y++, i++)
                 {
                     SortQuadData(i, AddQuad(x, y));
-                    AddNode(x, y);
                 }
             }
         }
 
+        public void LoadMeshData(Mesh mesh)
+        {
+            mesh.Clear();
+
+            mesh.vertices = _verticesList.ToArray();
+            mesh.triangles = _trianglesList.ToArray();
+
+            mesh.RecalculateNormals();
+        }
+
         private void InitilizeDataContainers()
         {
-            _quadArray = new Quad[gridWidth, gridHeight];
             _trianglesList = new List<int>();
             _verticesList = new List<Vector3>();
-            _nodeList = new Node[gridWidth, gridHeight];
         }
 
         private void SortQuadData(int index, Quad quad)
         {
-            var newQuadTriangle = AngleOffset * index;
-
-            _verticesList.AddRange(quad.GetVerticesData());
-            _trianglesList.AddRange(quad.GetTriangle(newQuadTriangle, newQuadTriangle, newQuadTriangle, newQuadTriangle));
+            SortVerticies(quad);
+            SortTriangles(index, quad);
         }
 
-        private Quad AddQuad(int x, int y)
-        {
-            var nodeX = x * (nodeWidth + spacing);
-            var nodeY = y * (nodeHeight + spacing);
+        private void SortVerticies(Quad quad) => _verticesList.AddRange(quad.GetVerticies());
 
-            Quad quad = new Quad(nodeX, nodeY, nodeWidth, nodeHeight);
-            _quadArray[x, y] = quad;
-            return quad;
-        }
+        private void SortTriangles(int index, Quad quad) => _trianglesList.AddRange(quad.GetTriangles(AngleOffset * index));
 
-        private void AddNode(int x, int y) => _nodeList[x, y] = new Node(x, y);
+        private Quad AddQuad(int x, int y) => new Quad(Position(x), Position(y), nodeWidth, nodeHeight);
+
+        private float Position(float coord) => coord * (nodeWidth + spacing);
     }
 }

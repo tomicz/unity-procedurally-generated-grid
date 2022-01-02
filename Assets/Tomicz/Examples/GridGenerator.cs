@@ -29,18 +29,8 @@ public class GridGenerator : MonoBehaviour
     private void OnValidate()
     {
         _grid = new OptimizedGrid(gridWidth, gridHeight, nodeWidth, nodeHeight, spacing);
+
         _grid.GenerateGrid();
-
-        LoadMeshData();
-    }
-
-    private void LoadMeshData()
-    {
-        _mesh.Clear();
-
-        _mesh.vertices = _grid.Vertices;
-        _mesh.triangles = _grid.Triangles;
-
-        _mesh.RecalculateNormals();
+        _grid.LoadMeshData(_mesh);
     }
 }
