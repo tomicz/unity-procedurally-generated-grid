@@ -1,4 +1,4 @@
-namespace Tomicz.Grid
+namespace TOMICZ.Grid
 {
     [System.Serializable]
     public struct Node

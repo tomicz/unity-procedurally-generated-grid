@@ -1,5 +1,5 @@
 using UnityEngine;
-using Tomicz.Grid;
+using TOMICZ.Grid;
 
 [ExecuteInEditMode]
 [RequireComponent(typeof(MeshFilter))]
