@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using Tomicz.GeometryShapes;
+using TOMICZ.GeometryShapes;
 using UnityEngine;
 
 namespace TOMICZ.Grid
