@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using Tomicz.GeometryShapes;
 using UnityEngine;
 
-namespace Tomicz.Grid
+namespace TOMICZ.Grid
 {
     public class OptimizedGrid
     {
