@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace TOMICZ.GeometryShapes
+namespace TOMICZ.Grid.GeometryShapes
 {
     [System.Serializable]
     public class Quad
