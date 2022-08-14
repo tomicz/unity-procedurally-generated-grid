@@ -1,6 +1,6 @@
 
 <p align="center">
-<img src="https://media.giphy.com/media/mdFObXCvTojzmWnQvf/giphy.gif" alt="Grid animation" title="Grid GIF" width="500"/>
+<img src="https://media.giphy.com/media/UVAtvQ3QHAz8g9CbsH/giphy.gif" alt="Grid animation" title="Grid GIF" width="500"/>
 </p>
 
 # About
