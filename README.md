@@ -5,7 +5,7 @@
 
 # About
 
-Optimized grid is a procedural grid with great performance, ideal for those that want to learn about optimization and memory. With this tool you will not need to to worry about object pooling with Unity's GameObjects. This is the best for those who want to practice pathfinding. 
+The Optimized Grid is a procedurally generated grid system that boasts exceptional performance, making it ideal for individuals seeking to learn about optimization and memory management. This tool eliminates the need for object pooling with Unity's GameObjects, making it a perfect tool for those looking to practice pathfinding."
 # Getting started
 
 Do not forget to add a namespace.
