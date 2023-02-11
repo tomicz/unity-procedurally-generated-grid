@@ -3,7 +3,7 @@ using UnityEngine;
 namespace TOMICZ.Grid.GeometryShapes
 {
     [System.Serializable]
-    public class Quad
+    public struct Quad
     {
         public float x;
         public float y;
