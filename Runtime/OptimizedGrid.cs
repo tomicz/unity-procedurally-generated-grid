@@ -50,6 +50,11 @@ namespace TOMICZ.Grid
 
         public void LoadMeshData(Mesh mesh)
         {
+            if(mesh == null)
+            {
+                return;
+            }
+
             mesh.Clear();
 
             mesh.vertices = _verticesList.ToArray();
