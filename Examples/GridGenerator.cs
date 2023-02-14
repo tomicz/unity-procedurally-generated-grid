@@ -24,6 +24,14 @@ public class GridGenerator : MonoBehaviour
     {
         _mesh = GetComponent<MeshFilter>().sharedMesh;
         _mesh.name = "Grid Mesh";
+
+        Material gridMaterial = new Material(Shader.Find("Unlit/Color"));
+        Renderer renderer = GetComponent<Renderer>();
+
+        if(renderer != null)
+        {
+            renderer.material = gridMaterial;
+        }
     }
 
     private void OnValidate()
