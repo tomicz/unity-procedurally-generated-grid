@@ -11,14 +11,14 @@ The Optimized Grid is a procedurally generated grid system that boasts exception
 Do not forget to add a namespace.
 ```
 using Tomicz.Grid;
-```	
 
-Add reference depenencies. Make sure you have MeshFilter and MeshRenderer attached to the gameObject.
+```	
+Before proceeding, please ensure that the necessary reference dependencies have been added. Specifically, confirm that both MeshFilter and MeshRenderer components have been appropriately attached to the designated gameObject.
 ```
 private Mesh _mesh;
 private OptimizedGrid _grid;
 ```
-You can also use this inside an update with [ExecuteInEditMode]. If your application or game needs the grid to be updated in real time, then it's the best to update it with sliders or some other input. 
+If required for real-time updates in your application or game, you can invoke this function within an Update loop with the [ExecuteInEditMode] attribute. For optimal performance, it is recommended to update the grid using sliders or alternative input methods.
 ```		
 private void Start()
 {
@@ -37,7 +37,7 @@ private void Start()
 
 ```
 
-This method will load triangles and vertices into the mesh. Also, it will recalculate all the normals.
+By calling this method, both triangles and vertices will be loaded into the mesh, while all normals will be recalculated as well.
 ```
 private void LoadMeshData(Mesh mesh)
 {
@@ -52,6 +52,6 @@ private void LoadMeshData(Mesh mesh)
 
 # Limitations
 
-* Unity only allows 55k vertices per object, which means that you will be able to only display up to 14400 quads.
+* Please be advised that Unity imposes a limit of 55,000 vertices per object, which equates to a maximum display of 14,400 quads.
 
-* Each quad contains 6 angles or two triangles and it's possible to reach an integer limit. Unity mesh triangles only support integer numbers. 
+* It is important to note that each quad is comprised of 6 angles or two triangles, and that Unity mesh triangles exclusively support integer values. Consequently, it is possible to reach an integer limit.
