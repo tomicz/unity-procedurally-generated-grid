@@ -35,15 +35,45 @@ namespace TOMICZ.Grid
             this.spacing = spacing;
         }
 
-        public void GenerateGrid()
+        public void GenerateGrid(bool isHorizontal = false)
         {
-            InitilizeDataContainers();
+            _verticesList = new List<Vector3>();
+            _trianglesList = new List<int>();
 
-            for (int x = 0, i = 0; x < gridWidth; x++)
+            int vertexIndex = 0;
+            int triangleIndex = 0;
+
+            for (int y = 0; y < gridHeight; y++)
             {
-                for (int y = 0; y < gridHeight; y++, i++)
+                for (int x = 0; x < gridWidth; x++)
                 {
-                    SortQuadData(i, AddQuad(x, y));
+                    float xPos = x * (nodeWidth + spacing);
+                    float yPos = y * (nodeHeight + spacing);
+
+                    if (isHorizontal)
+                    {
+                        _verticesList.Add(new Vector3(xPos, 0, yPos));
+                        _verticesList.Add(new Vector3(xPos + nodeWidth, 0, yPos));
+                        _verticesList.Add(new Vector3(xPos, 0, yPos + nodeHeight));
+                        _verticesList.Add(new Vector3(xPos + nodeWidth, 0, yPos + nodeHeight));
+                    }
+                    else
+                    {
+                        _verticesList.Add(new Vector3(xPos, yPos, 0));
+                        _verticesList.Add(new Vector3(xPos + nodeWidth, yPos, 0));
+                        _verticesList.Add(new Vector3(xPos, yPos + nodeHeight, 0));
+                        _verticesList.Add(new Vector3(xPos + nodeWidth, yPos + nodeHeight, 0));
+                    }
+
+                    _trianglesList.Add(vertexIndex);
+                    _trianglesList.Add(vertexIndex + 2);
+                    _trianglesList.Add(vertexIndex + 1);
+                    _trianglesList.Add(vertexIndex + 2);
+                    _trianglesList.Add(vertexIndex + 3);
+                    _trianglesList.Add(vertexIndex + 1);
+
+                    vertexIndex += 4;
+                    triangleIndex += 6;
                 }
             }
         }

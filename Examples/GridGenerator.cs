@@ -7,23 +7,28 @@ using TOMICZ.Grid;
 public class GridGenerator : MonoBehaviour
 {
     [SerializeField] private int gridWidth;
-
     [SerializeField] private int gridHeight;
-
     [SerializeField] private float spacing = .1f;
-    
     [SerializeField] private float nodeWidth = 1f;
-
     [SerializeField] private float nodeHeight = 1f;
+    [SerializeField] private bool isHorizontal;
 
-    private Mesh _mesh = null;
-
+    private Mesh _mesh;
     private OptimizedGrid _grid;
 
     private void Awake()
     {
-        _mesh = GetComponent<MeshFilter>().sharedMesh;
-        _mesh.name = "Grid Mesh";
+        var meshFilter = GetComponent<MeshFilter>();
+        if (meshFilter.sharedMesh == null)
+        {
+            _mesh = new Mesh();
+            _mesh.name = "Grid Mesh";
+            meshFilter.sharedMesh = _mesh;
+        }
+        else
+        {
+            _mesh = meshFilter.sharedMesh;
+        }
 
         Material gridMaterial = new Material(Shader.Find("Unlit/Color"));
         Renderer renderer = GetComponent<Renderer>();
@@ -36,9 +41,23 @@ public class GridGenerator : MonoBehaviour
 
     private void OnValidate()
     {
-        _grid = new OptimizedGrid(gridWidth, gridHeight, nodeWidth, nodeHeight, spacing);
+        if (_mesh == null)
+        {
+            var meshFilter = GetComponent<MeshFilter>();
+            if (meshFilter.sharedMesh == null)
+            {
+                _mesh = new Mesh();
+                _mesh.name = "Grid Mesh";
+                meshFilter.sharedMesh = _mesh;
+            }
+            else
+            {
+                _mesh = meshFilter.sharedMesh;
+            }
+        }
 
-        _grid.GenerateGrid();
+        _grid = new OptimizedGrid(gridWidth, gridHeight, nodeWidth, nodeHeight, spacing);
+        _grid.GenerateGrid(isHorizontal);
         _grid.LoadMeshData(_mesh);
     }
 }
