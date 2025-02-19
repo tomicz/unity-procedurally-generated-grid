@@ -6,6 +6,8 @@ using TOMICZ.Grid;
 [RequireComponent(typeof(MeshRenderer))]
 public class GridGenerator : MonoBehaviour
 {
+    public OptimizedGrid Grid => _grid;
+
     [SerializeField] private int gridWidth;
     [SerializeField] private int gridHeight;
     [SerializeField] private float spacing = .1f;
@@ -15,6 +17,15 @@ public class GridGenerator : MonoBehaviour
 
     private Mesh _mesh;
     private OptimizedGrid _grid;
+
+    public void SetNodeColor(int x, int y, Color color)
+    {
+        if (_grid != null)
+        {
+            _grid.SetNodeColor(x, y, color);
+            _grid.LoadMeshData(_mesh);
+        }
+    }
 
     private void Awake()
     {
@@ -30,7 +41,7 @@ public class GridGenerator : MonoBehaviour
             _mesh = meshFilter.sharedMesh;
         }
 
-        Material gridMaterial = new Material(Shader.Find("Unlit/Color"));
+        Material gridMaterial = new Material(Shader.Find("Custom/VertexColor"));
         Renderer renderer = GetComponent<Renderer>();
 
         if(renderer != null)
