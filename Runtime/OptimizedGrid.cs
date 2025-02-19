@@ -49,14 +49,8 @@ namespace TOMICZ.Grid
             if (gridWidth <= 0 || gridHeight <= 0)
                 return;
 
-            // Calculate how many quads we can fit in one section
-            int totalQuads = gridWidth * gridHeight;
-            int quadsPerSection = Mathf.Min(MaxQuadsPerMesh, totalQuads);
-            
-            // Calculate rows and columns per section
-            int rowsPerSection = Mathf.FloorToInt((float)quadsPerSection / gridWidth);
-            
-            // Calculate how many sections we need
+            int quadsPerSection = MaxQuadsPerMesh;
+            int rowsPerSection = quadsPerSection / gridWidth;
             int sectionsNeeded = Mathf.CeilToInt((float)gridHeight / rowsPerSection);
 
             int vertexOffset = 0;
