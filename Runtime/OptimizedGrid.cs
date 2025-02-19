@@ -5,20 +5,32 @@ namespace TOMICZ.Grid
 {
     public class OptimizedGrid
     {
+        private const int MaxVerticesPerMesh = 65000;
+        private const int VerticesPerQuad = 4;
+        private const int MaxQuadsPerMesh = MaxVerticesPerMesh / VerticesPerQuad;
+
+        public List<GridMeshSection> MeshSections { get; private set; } = new();
+
+        public class GridMeshSection
+        {
+            public List<Vector3> Vertices = new();
+            public List<int> Triangles = new();
+            public List<Color> Colors = new();
+            public int StartX, StartY, Width, Height;
+            public int VertexOffset;  // Track vertex index offset for this section
+        }
+
         public int gridWidth;
         public int gridHeight;
         public float nodeWidth;
         public float nodeHeight;
         public float spacing;
 
-        public Vector3[] Vertices => _verticesList.ToArray();
-        public int[] Triangles => _trianglesList.ToArray();
-        public Color[] Colors => _colorsList.ToArray();
-
         private List<Vector3> _verticesList;
         private List<int> _trianglesList;
         private List<Color> _colorsList;
         private Color _defaultColor = Color.white;
+        private bool _isHorizontal;
 
         public OptimizedGrid(int gridWidth, int gridHeight, float nodeWidth, float nodeHeight, float spacing)
         {
@@ -31,105 +43,131 @@ namespace TOMICZ.Grid
 
         public void GenerateGrid(bool isHorizontal = false)
         {
-            InitializeLists();
-            CalculateGridDimensions(out float startX, out float startY);
-            GenerateNodes(startX, startY, isHorizontal);
+            _isHorizontal = isHorizontal;
+            MeshSections.Clear();
+
+            if (gridWidth <= 0 || gridHeight <= 0)
+                return;
+
+            // Calculate how many quads we can fit in one section
+            int totalQuads = gridWidth * gridHeight;
+            int quadsPerSection = Mathf.Min(MaxQuadsPerMesh, totalQuads);
+            
+            // Calculate rows and columns per section
+            int rowsPerSection = Mathf.FloorToInt((float)quadsPerSection / gridWidth);
+            
+            // Calculate how many sections we need
+            int sectionsNeeded = Mathf.CeilToInt((float)gridHeight / rowsPerSection);
+
+            int vertexOffset = 0;
+            for (int i = 0; i < sectionsNeeded; i++)
+            {
+                int startY = i * rowsPerSection;
+                int height = Mathf.Min(rowsPerSection, gridHeight - startY);
+
+                if (height <= 0) break;
+
+                var section = new GridMeshSection
+                {
+                    StartX = 0,
+                    StartY = startY,
+                    Width = gridWidth,
+                    Height = height,
+                    VertexOffset = vertexOffset
+                };
+
+                GenerateGridSection(section, isHorizontal);
+                MeshSections.Add(section);
+
+                vertexOffset += section.Width * section.Height * 4;
+            }
         }
 
-        private void InitializeLists()
-        {
-            _verticesList = new List<Vector3>();
-            _trianglesList = new List<int>();
-            _colorsList = new List<Color>();
-        }
-
-        private void CalculateGridDimensions(out float startX, out float startY)
+        private void GenerateGridSection(GridMeshSection section, bool isHorizontal)
         {
             float totalWidth = gridWidth * (nodeWidth + spacing) - spacing;
             float totalHeight = gridHeight * (nodeHeight + spacing) - spacing;
-            startX = -totalWidth / 2f;
-            startY = -totalHeight / 2f;
-        }
+            float startX = -totalWidth / 2f;
+            float startY = -totalHeight / 2f;
 
-        private void GenerateNodes(float startX, float startY, bool isHorizontal)
-        {
-            int vertexIndex = 0;
+            int localVertexIndex = 0;
 
-            for (int y = 0; y < gridHeight; y++)
+            for (int y = section.StartY; y < section.StartY + section.Height; y++)
             {
-                for (int x = 0; x < gridWidth; x++)
+                for (int x = 0; x < section.Width; x++)
                 {
                     float xPos = startX + x * (nodeWidth + spacing);
                     float yPos = startY + y * (nodeHeight + spacing);
 
-                    AddNodeVertices(xPos, yPos, isHorizontal);
-                    AddNodeColors();
-                    AddNodeTriangles(vertexIndex);
-
-                    vertexIndex += 4;
+                    AddNodeToSection(section, xPos, yPos, localVertexIndex, isHorizontal);
+                    localVertexIndex += 4;
                 }
             }
         }
 
-        private void AddNodeVertices(float xPos, float yPos, bool isHorizontal)
+        private void AddNodeToSection(GridMeshSection section, float xPos, float yPos, int localVertexIndex, bool isHorizontal)
         {
             if (isHorizontal)
             {
-                _verticesList.Add(new Vector3(xPos, 0, yPos));
-                _verticesList.Add(new Vector3(xPos + nodeWidth, 0, yPos));
-                _verticesList.Add(new Vector3(xPos, 0, yPos + nodeHeight));
-                _verticesList.Add(new Vector3(xPos + nodeWidth, 0, yPos + nodeHeight));
+                section.Vertices.AddRange(new[]
+                {
+                    new Vector3(xPos, 0, yPos),
+                    new Vector3(xPos + nodeWidth, 0, yPos),
+                    new Vector3(xPos, 0, yPos + nodeHeight),
+                    new Vector3(xPos + nodeWidth, 0, yPos + nodeHeight)
+                });
             }
             else
             {
-                _verticesList.Add(new Vector3(xPos, yPos, 0));
-                _verticesList.Add(new Vector3(xPos + nodeWidth, yPos, 0));
-                _verticesList.Add(new Vector3(xPos, yPos + nodeHeight, 0));
-                _verticesList.Add(new Vector3(xPos + nodeWidth, yPos + nodeHeight, 0));
+                section.Vertices.AddRange(new[]
+                {
+                    new Vector3(xPos, yPos, 0),
+                    new Vector3(xPos + nodeWidth, yPos, 0),
+                    new Vector3(xPos, yPos + nodeHeight, 0),
+                    new Vector3(xPos + nodeWidth, yPos + nodeHeight, 0)
+                });
             }
-        }
 
-        private void AddNodeColors()
-        {
-            for (int i = 0; i < 4; i++)
-            {
-                _colorsList.Add(_defaultColor);
-            }
-        }
-
-        private void AddNodeTriangles(int vertexIndex)
-        {
-            _trianglesList.Add(vertexIndex);
-            _trianglesList.Add(vertexIndex + 2);
-            _trianglesList.Add(vertexIndex + 1);
-            _trianglesList.Add(vertexIndex + 2);
-            _trianglesList.Add(vertexIndex + 3);
-            _trianglesList.Add(vertexIndex + 1);
-        }
-
-        public void SetNodeColor(int x, int y, Color color)
-        {
-            if (x < 0 || x >= gridWidth || y < 0 || y >= gridHeight)
-                return;
-
-            int vertexIndex = (y * gridWidth + x) * 4;
+            section.Colors.AddRange(new[] { _defaultColor, _defaultColor, _defaultColor, _defaultColor });
             
-            for (int i = 0; i < 4; i++)
+            int vertexIndex = localVertexIndex;
+            section.Triangles.AddRange(new[]
             {
-                _colorsList[vertexIndex + i] = color;
-            }
+                vertexIndex, vertexIndex + 2, vertexIndex + 1,
+                vertexIndex + 2, vertexIndex + 3, vertexIndex + 1
+            });
         }
 
         public void LoadMeshData(Mesh mesh)
         {
-            if(mesh == null)
-                return;
+            if (mesh == null || MeshSections.Count == 0) return;
 
+            // Get the first section
+            var section = MeshSections[0];
+            
             mesh.Clear();
-            mesh.vertices = _verticesList.ToArray();
-            mesh.triangles = _trianglesList.ToArray();
-            mesh.colors = _colorsList.ToArray();
+            mesh.vertices = section.Vertices.ToArray();
+            mesh.triangles = section.Triangles.ToArray();
+            mesh.colors = section.Colors.ToArray();
             mesh.RecalculateNormals();
+        }
+
+        public void SetNodeColor(int x, int y, Color color)
+        {
+            foreach (var section in MeshSections)
+            {
+                if (y >= section.StartY && y < section.StartY + section.Height)
+                {
+                    int localY = y - section.StartY;
+                    int vertexIndex = (localY * section.Width + x) * 4;
+                    
+                    for (int i = 0; i < 4; i++)
+                    {
+                        section.Colors[vertexIndex + i] = color;
+                    }
+                    break;
+                }
+            }
         }
     }
 }
