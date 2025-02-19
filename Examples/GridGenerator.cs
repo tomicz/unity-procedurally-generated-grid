@@ -28,7 +28,6 @@ public class GridGenerator : MonoBehaviour
         {
             _grid.SetNodeColor(x, y, color);
             
-            // Update all mesh sections
             _grid.LoadMeshData(_mesh);
             for (int i = 0; i < _additionalMeshFilters.Count; i++)
             {
@@ -51,7 +50,7 @@ public class GridGenerator : MonoBehaviour
         if (meshFilter.sharedMesh == null)
         {
             _mesh = new Mesh();
-            _mesh.name = "Grid Mesh";
+            _mesh.name = "Grid Mesh Section 0";
             meshFilter.sharedMesh = _mesh;
         }
         else
@@ -85,7 +84,6 @@ public class GridGenerator : MonoBehaviour
             }
         }
 
-        // Ensure positive values
         gridWidth = Mathf.Max(0, gridWidth);
         gridHeight = Mathf.Max(0, gridHeight);
 
@@ -94,14 +92,11 @@ public class GridGenerator : MonoBehaviour
 
     private void RegenerateGrid()
     {
-        // First, destroy all existing section objects and clear the list
         ClearAdditionalMeshes();
 
-        // Clear the main mesh
         if (_mesh != null)
         {
             _mesh.Clear();
-            // Ensure the main mesh filter still has our mesh
             var meshFilter = GetComponent<MeshFilter>();
             if (meshFilter != null)
             {
@@ -109,14 +104,11 @@ public class GridGenerator : MonoBehaviour
             }
         }
 
-        // Generate completely new grid
         _grid = new OptimizedGrid(gridWidth, gridHeight, nodeWidth, nodeHeight, spacing);
         _grid.GenerateGrid(isHorizontal);
 
-        // Load first section into main mesh
         _grid.LoadMeshData(_mesh);
 
-        // Create new section objects only if needed
         for (int i = 1; i < _grid.MeshSections.Count; i++)
         {
             var go = new GameObject($"Grid Section {i}");
@@ -144,7 +136,6 @@ public class GridGenerator : MonoBehaviour
 
     private void ClearAdditionalMeshes()
     {
-        // Ensure we destroy both the GameObjects and their meshes
         foreach (var filter in _additionalMeshFilters)
         {
             if (filter != null)
