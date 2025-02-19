@@ -43,12 +43,17 @@ namespace TOMICZ.Grid
             int vertexIndex = 0;
             int triangleIndex = 0;
 
+            float totalWidth = gridWidth * (nodeWidth + spacing) - spacing;
+            float totalHeight = gridHeight * (nodeHeight + spacing) - spacing;
+            float startX = -totalWidth / 2f;
+            float startY = -totalHeight / 2f;
+
             for (int y = 0; y < gridHeight; y++)
             {
                 for (int x = 0; x < gridWidth; x++)
                 {
-                    float xPos = x * (nodeWidth + spacing);
-                    float yPos = y * (nodeHeight + spacing);
+                    float xPos = startX + x * (nodeWidth + spacing);
+                    float yPos = startY + y * (nodeHeight + spacing);
 
                     if (isHorizontal)
                     {
