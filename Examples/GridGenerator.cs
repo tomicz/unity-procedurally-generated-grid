@@ -27,7 +27,21 @@ public class GridGenerator : MonoBehaviour
         if (_grid != null)
         {
             _grid.SetNodeColor(x, y, color);
+            
+            // Update all mesh sections
             _grid.LoadMeshData(_mesh);
+            for (int i = 0; i < _additionalMeshFilters.Count; i++)
+            {
+                if (_additionalMeshFilters[i] != null && i + 1 < _grid.MeshSections.Count)
+                {
+                    var section = _grid.MeshSections[i + 1];
+                    var sectionMesh = _additionalMeshFilters[i].sharedMesh;
+                    if (sectionMesh != null)
+                    {
+                        sectionMesh.colors = section.Colors.ToArray();
+                    }
+                }
+            }
         }
     }
 
@@ -75,18 +89,34 @@ public class GridGenerator : MonoBehaviour
         gridWidth = Mathf.Max(0, gridWidth);
         gridHeight = Mathf.Max(0, gridHeight);
 
-        // Clear existing meshes
-        ClearAdditionalMeshes();
-        if (_mesh != null)
-            _mesh.Clear();
+        RegenerateGrid();
+    }
 
+    private void RegenerateGrid()
+    {
+        // First, destroy all existing section objects and clear the list
+        ClearAdditionalMeshes();
+
+        // Clear the main mesh
+        if (_mesh != null)
+        {
+            _mesh.Clear();
+            // Ensure the main mesh filter still has our mesh
+            var meshFilter = GetComponent<MeshFilter>();
+            if (meshFilter != null)
+            {
+                meshFilter.sharedMesh = _mesh;
+            }
+        }
+
+        // Generate completely new grid
         _grid = new OptimizedGrid(gridWidth, gridHeight, nodeWidth, nodeHeight, spacing);
         _grid.GenerateGrid(isHorizontal);
 
         // Load first section into main mesh
         _grid.LoadMeshData(_mesh);
 
-        // Create additional sections if needed
+        // Create new section objects only if needed
         for (int i = 1; i < _grid.MeshSections.Count; i++)
         {
             var go = new GameObject($"Grid Section {i}");
@@ -114,14 +144,26 @@ public class GridGenerator : MonoBehaviour
 
     private void ClearAdditionalMeshes()
     {
+        // Ensure we destroy both the GameObjects and their meshes
         foreach (var filter in _additionalMeshFilters)
         {
             if (filter != null)
             {
-                if (Application.isPlaying)
-                    Destroy(filter.gameObject);
-                else
-                    DestroyImmediate(filter.gameObject);
+                if (filter.sharedMesh != null)
+                {
+                    if (Application.isPlaying)
+                        Destroy(filter.sharedMesh);
+                    else
+                        DestroyImmediate(filter.sharedMesh);
+                }
+
+                if (filter.gameObject != null)
+                {
+                    if (Application.isPlaying)
+                        Destroy(filter.gameObject);
+                    else
+                        DestroyImmediate(filter.gameObject);
+                }
             }
         }
         _additionalMeshFilters.Clear();
