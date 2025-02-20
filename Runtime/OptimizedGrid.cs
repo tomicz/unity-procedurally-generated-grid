@@ -9,7 +9,14 @@ namespace TOMICZ.Grid
         private const int _verticesPerQuad = 4;
         private const int _maxQuadsPerMesh = _maxVerticesPerMesh / _verticesPerQuad;
 
+        public int GridWidth { get; private set; }
+        public int GridHeight { get; private set; }
+        public float NodeWidth { get; private set; }
+        public float NodeHeight { get; private set; }
+        public float Spacing { get; private set; }
+
         public List<GridMeshSection> MeshSections { get; private set; } = new();
+        private bool[,] _occupiedNodes;
 
         public class GridMeshSection
         {
@@ -19,12 +26,6 @@ namespace TOMICZ.Grid
             public int StartX, StartY, Width, Height;
             public int VertexOffset;
         }
-
-        public int GridWidth;
-        public int GridHeight;
-        public float NodeWidth;
-        public float NodeHeight;
-        public float Spacing;
 
         private Color _defaultColor = Color.white;
         private bool _isHorizontal;
@@ -36,6 +37,24 @@ namespace TOMICZ.Grid
             NodeWidth = nodeWidth;
             NodeHeight = nodeHeight;
             Spacing = spacing;
+            _occupiedNodes = new bool[gridWidth, gridHeight];
+        }
+
+        public void SetNodeOccupied(int x, int y, bool occupied)
+        {
+            if (x >= 0 && x < GridWidth && y >= 0 && y < GridHeight)
+            {
+                _occupiedNodes[x, y] = occupied;
+            }
+        }
+
+        public bool IsNodeOccupied(int x, int y)
+        {
+            if (x >= 0 && x < GridWidth && y >= 0 && y < GridHeight)
+            {
+                return _occupiedNodes[x, y];
+            }
+            return false;
         }
 
         public void GenerateGrid(bool isHorizontal = false)
