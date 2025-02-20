@@ -15,6 +15,7 @@ public class GridGenerator : MonoBehaviour
     [SerializeField] private float nodeWidth = 1f;
     [SerializeField] private float nodeHeight = 1f;
     [SerializeField] private bool isHorizontal;
+    [SerializeField] private Material _defaultMaterial;
 
     private Mesh _mesh;
     private OptimizedGrid _grid;
