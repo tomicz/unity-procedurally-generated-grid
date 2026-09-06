@@ -69,6 +69,10 @@ Nodes are indexed by `y * GridWidth + x`. `GetNodeIndex`, `IsInBounds`, `Occupie
 
 In play mode, colors set through the component are uploaded to the mesh once at the end of the frame, so painting a whole path costs a single upload. Call `ApplyColors()` to flush sooner, and `SetAllNodeColors` to reset the grid before repainting. With the plain `OptimizedGrid`, check `ColorsDirty` and call `LoadMeshColors` when you are done changing colors.
 
+## Example scene
+
+`Examples/GridExampleScene` has a grid with a `GridPainter` component attached. Press Play and click or drag on the grid in the Game view to toggle nodes between free and occupied. Dragging paints or erases depending on the first node you touch. The painter picks nodes by intersecting the mouse ray with the grid's plane, so it needs no collider, and it uses the legacy Input Manager.
+
 # Running the tests
 
 Edit-mode tests live under `Tests/Editor`. To see them in the Test Runner of a project that installs this package, list the package in that project's `Packages/manifest.json`:

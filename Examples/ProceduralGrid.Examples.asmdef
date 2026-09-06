@@ -1,0 +1,7 @@
+{
+    "name": "ProceduralGrid.Examples",
+    "rootNamespace": "TOMICZ.Grid.Examples",
+    "references": [
+        "ProceduralGrid.Runtime"
+    ]
+}
