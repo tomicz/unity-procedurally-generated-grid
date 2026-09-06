@@ -1,3 +1,4 @@
 {
-	"name": "ProceduralGrid.Runtime"
+    "name": "ProceduralGrid.Runtime",
+    "rootNamespace": "TOMICZ.Grid"
 }
