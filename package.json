@@ -1,6 +1,6 @@
 {
   "name": "com.tomicz.procedural-grid",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "displayName": "Procedural Grid",
   "description": "A procedurally generated grid rendered as a single vertex-colored mesh. Per-node occupancy and color state, no GameObject per cell, suitable for pathfinding visualisation.",
   "unity": "2021.3",
