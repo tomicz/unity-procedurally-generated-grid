@@ -108,6 +108,28 @@ namespace TOMICZ.Grid.Tests
         }
 
         [Test]
+        public void SetNodeColor_InEditMode_UploadsImmediately()
+        {
+            _generator.SetNodeColor(1, 1, Red);
+
+            Assert.IsFalse(_generator.Grid.ColorsDirty);
+            int first = _generator.Grid.GetNodeIndex(1, 1) * OptimizedGrid.VerticesPerNode;
+            AssertColor(Red, SharedMesh().colors32[first]);
+        }
+
+        [Test]
+        public void SetAllNodeColors_RepaintsWholeMesh()
+        {
+            _generator.SetNodeColor(0, 0, Red);
+            _generator.SetAllNodeColors(OptimizedGrid.White);
+
+            foreach (Color32 c in SharedMesh().colors32)
+            {
+                AssertColor(OptimizedGrid.White, c);
+            }
+        }
+
+        [Test]
         public void SetNodeColor_OutOfRange_DoesNotThrow()
         {
             Assert.DoesNotThrow(() => _generator.SetNodeColor(10, 0, Red));

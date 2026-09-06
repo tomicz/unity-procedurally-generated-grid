@@ -42,6 +42,13 @@ namespace TOMICZ.Grid
         public Color32[] NodeColors { get; private set; }
 
         /// <summary>
+        /// True when node colors have changed since they were last uploaded with
+        /// LoadMeshData or LoadMeshColors. Lets callers batch many SetNodeColor
+        /// calls into a single upload.
+        /// </summary>
+        public bool ColorsDirty { get; private set; }
+
+        /// <summary>
         /// Creates a grid. If <paramref name="occupied"/> or <paramref name="nodeColors"/>
         /// are supplied with exactly <c>gridWidth * gridHeight</c> entries, the grid uses
         /// those arrays directly, so an owner can serialize them and hand them back to
@@ -138,6 +145,7 @@ namespace TOMICZ.Grid
 
             int nodeIndex = GetNodeIndex(x, y);
             NodeColors[nodeIndex] = color;
+            ColorsDirty = true;
 
             // Mirror into the vertex buffer if the mesh data has been generated.
             if (Colors.Length == NodeCount * VerticesPerNode)
@@ -148,6 +156,22 @@ namespace TOMICZ.Grid
                 Colors[v + 2] = color;
                 Colors[v + 3] = color;
             }
+        }
+
+        /// <summary>Sets every node to one color. Useful to reset a visualisation before repainting.</summary>
+        public void SetAllNodeColors(Color32 color)
+        {
+            for (int i = 0; i < NodeColors.Length; i++)
+            {
+                NodeColors[i] = color;
+            }
+
+            for (int i = 0; i < Colors.Length; i++)
+            {
+                Colors[i] = color;
+            }
+
+            ColorsDirty = true;
         }
 
         public void GenerateGrid(bool isHorizontal = false)
@@ -216,6 +240,7 @@ namespace TOMICZ.Grid
             if (mesh == null) return;
 
             mesh.Clear();
+            ColorsDirty = false;
 
             if (Vertices.Length == 0)
                 return;
@@ -239,6 +264,7 @@ namespace TOMICZ.Grid
             if (mesh == null || mesh.vertexCount != Colors.Length) return;
 
             mesh.SetColors(Colors);
+            ColorsDirty = false;
         }
     }
 }

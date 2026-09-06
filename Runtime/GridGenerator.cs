@@ -34,6 +34,27 @@ namespace TOMICZ.Grid
             if (_grid == null) return;
 
             _grid.SetNodeColor(x, y, color);
+            FlushColorsInEditMode();
+        }
+
+        /// <summary>Sets every node to one color.</summary>
+        public void SetAllNodeColors(Color32 color)
+        {
+            if (_grid == null) return;
+
+            _grid.SetAllNodeColors(color);
+            FlushColorsInEditMode();
+        }
+
+        /// <summary>
+        /// Uploads pending color changes to the mesh. In play mode this runs
+        /// automatically at the end of every frame, so many SetNodeColor calls
+        /// cost one upload. Call it directly if you need the mesh updated sooner.
+        /// </summary>
+        public void ApplyColors()
+        {
+            if (_grid == null || !_grid.ColorsDirty) return;
+
             _grid.LoadMeshColors(_mesh);
         }
 
@@ -103,6 +124,18 @@ namespace TOMICZ.Grid
                 else
                     DestroyImmediate(_mesh);
             }
+        }
+
+        private void LateUpdate()
+        {
+            ApplyColors();
+        }
+
+        private void FlushColorsInEditMode()
+        {
+            // LateUpdate only ticks on demand outside play mode, so editor
+            // scripts see their change immediately instead of on the next repaint.
+            if (!Application.isPlaying) ApplyColors();
         }
 
         private void OnValidate()

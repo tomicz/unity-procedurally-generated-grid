@@ -260,6 +260,66 @@ namespace TOMICZ.Grid.Tests
         }
 
         [Test]
+        public void SetNodeColor_MarksColorsDirtyUntilUploaded()
+        {
+            var mesh = new Mesh();
+            try
+            {
+                OptimizedGrid grid = MakeGrid(3, 3);
+                grid.LoadMeshData(mesh);
+                Assert.IsFalse(grid.ColorsDirty, "clean after full upload");
+
+                grid.SetNodeColor(0, 0, Red);
+                Assert.IsTrue(grid.ColorsDirty, "dirty after a change");
+
+                grid.LoadMeshColors(mesh);
+                Assert.IsFalse(grid.ColorsDirty, "clean after color upload");
+            }
+            finally
+            {
+                Object.DestroyImmediate(mesh);
+            }
+        }
+
+        [Test]
+        public void SetAllNodeColors_FillsEveryNodeAndVertex()
+        {
+            OptimizedGrid grid = MakeGrid(3, 2);
+
+            grid.SetAllNodeColors(Red);
+
+            foreach (Color32 c in grid.NodeColors)
+            {
+                AssertColor(Red, c);
+            }
+            foreach (Color32 c in grid.Colors)
+            {
+                AssertColor(Red, c);
+            }
+            Assert.IsTrue(grid.ColorsDirty);
+        }
+
+        [Test]
+        public void LoadMeshColors_WithMismatchedMesh_LeavesColorsDirty()
+        {
+            var mesh = new Mesh();
+            try
+            {
+                MakeGrid(2, 2).LoadMeshData(mesh);
+                OptimizedGrid other = MakeGrid(3, 3);
+                other.SetNodeColor(0, 0, Red);
+
+                other.LoadMeshColors(mesh);
+
+                Assert.IsTrue(other.ColorsDirty);
+            }
+            finally
+            {
+                Object.DestroyImmediate(mesh);
+            }
+        }
+
+        [Test]
         public void LoadMeshData_UsesSixteenBitIndicesForSmallGrids()
         {
             var mesh = new Mesh();

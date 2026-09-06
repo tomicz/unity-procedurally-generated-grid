@@ -65,6 +65,10 @@ Nodes are indexed by `y * GridWidth + x`. `GetNodeIndex`, `IsInBounds`, `Occupie
 
 `NodeToWorld(x, y)` returns the world-space center of a node, and `WorldToNode(position, out x, out y)` maps a world position back to a node, returning false outside the grid. A position that lands in a spacing gap belongs to the node before the gap. The plain `OptimizedGrid` offers the same in local space as `GetNodeCenter` and `TryGetNode`.
 
+## Batching color changes
+
+In play mode, colors set through the component are uploaded to the mesh once at the end of the frame, so painting a whole path costs a single upload. Call `ApplyColors()` to flush sooner, and `SetAllNodeColors` to reset the grid before repainting. With the plain `OptimizedGrid`, check `ColorsDirty` and call `LoadMeshColors` when you are done changing colors.
+
 # Running the tests
 
 Edit-mode tests live under `Tests/Editor`. To see them in the Test Runner of a project that installs this package, list the package in that project's `Packages/manifest.json`:
