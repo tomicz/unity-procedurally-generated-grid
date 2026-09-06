@@ -8,6 +8,9 @@ namespace TOMICZ.Grid
         public const int VerticesPerNode = 4;
         public const int IndicesPerNode = 6;
 
+        /// <summary>Largest number of entries GetNeighbors can write.</summary>
+        public const int MaxNeighbors = 8;
+
         /// <summary>Default node color. Color32 is 4 bytes per vertex where Color is 16.</summary>
         public static readonly Color32 White = new Color32(255, 255, 255, 255);
 
@@ -93,6 +96,13 @@ namespace TOMICZ.Grid
             return y * GridWidth + x;
         }
 
+        /// <summary>Inverse of GetNodeIndex. Not bounds-checked.</summary>
+        public void GetNodeCoordinates(int nodeIndex, out int x, out int y)
+        {
+            x = nodeIndex % GridWidth;
+            y = nodeIndex / GridWidth;
+        }
+
         /// <summary>
         /// Local-space center of a node, in the XZ plane for horizontal grids and XY
         /// otherwise. Not bounds-checked, so positions just outside the grid can be queried.
@@ -134,6 +144,50 @@ namespace TOMICZ.Grid
             return IsInBounds(x, y) && Occupied[GetNodeIndex(x, y)];
         }
 
+        /// <summary>Marks every node as free.</summary>
+        public void ClearOccupancy()
+        {
+            System.Array.Clear(Occupied, 0, Occupied.Length);
+        }
+
+        /// <summary>
+        /// Writes the node indices of the free neighbours of (x, y) into
+        /// <paramref name="results"/> and returns how many were written. Never
+        /// allocates; the buffer needs room for MaxNeighbors entries. A diagonal is
+        /// only offered when both orthogonal nodes beside it are free, so paths
+        /// cannot cut corners through obstacles. Pass skipOccupied false to get
+        /// every in-bounds neighbour regardless of occupancy.
+        /// </summary>
+        public int GetNeighbors(int x, int y, int[] results, bool includeDiagonals = false, bool skipOccupied = true)
+        {
+            int count = 0;
+            bool left = TryAddNeighbor(x - 1, y, results, ref count, skipOccupied);
+            bool right = TryAddNeighbor(x + 1, y, results, ref count, skipOccupied);
+            bool down = TryAddNeighbor(x, y - 1, results, ref count, skipOccupied);
+            bool up = TryAddNeighbor(x, y + 1, results, ref count, skipOccupied);
+
+            if (includeDiagonals)
+            {
+                if (left && down) TryAddNeighbor(x - 1, y - 1, results, ref count, skipOccupied);
+                if (right && down) TryAddNeighbor(x + 1, y - 1, results, ref count, skipOccupied);
+                if (left && up) TryAddNeighbor(x - 1, y + 1, results, ref count, skipOccupied);
+                if (right && up) TryAddNeighbor(x + 1, y + 1, results, ref count, skipOccupied);
+            }
+
+            return count;
+        }
+
+        private bool TryAddNeighbor(int x, int y, int[] results, ref int count, bool skipOccupied)
+        {
+            if (!IsInBounds(x, y)) return false;
+
+            int index = GetNodeIndex(x, y);
+            if (skipOccupied && Occupied[index]) return false;
+
+            results[count++] = index;
+            return true;
+        }
+
         public Color32 GetNodeColor(int x, int y)
         {
             return IsInBounds(x, y) ? NodeColors[GetNodeIndex(x, y)] : default;
@@ -143,7 +197,12 @@ namespace TOMICZ.Grid
         {
             if (!IsInBounds(x, y)) return;
 
-            int nodeIndex = GetNodeIndex(x, y);
+            SetNodeColor(GetNodeIndex(x, y), color);
+        }
+
+        /// <summary>Index-based overload for callers that already hold a node index. Not bounds-checked.</summary>
+        public void SetNodeColor(int nodeIndex, Color32 color)
+        {
             NodeColors[nodeIndex] = color;
             ColorsDirty = true;
 

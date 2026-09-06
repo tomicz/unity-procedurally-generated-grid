@@ -69,6 +69,10 @@ Nodes are indexed by `y * GridWidth + x`. `GetNodeIndex`, `IsInBounds`, `Occupie
 
 In play mode, colors set through the component are uploaded to the mesh once at the end of the frame, so painting a whole path costs a single upload. Call `ApplyColors()` to flush sooner, and `SetAllNodeColors` to reset the grid before repainting. With the plain `OptimizedGrid`, check `ColorsDirty` and call `LoadMeshColors` when you are done changing colors.
 
+## Neighbours
+
+`GetNeighbors(x, y, buffer, includeDiagonals, skipOccupied)` fills an `int[]` of node indices and returns the count, without allocating. Occupied nodes are skipped by default, and a diagonal is only offered when both orthogonal nodes beside it are free, so a path can never squeeze between two obstacles. `GetNodeCoordinates` turns an index back into x and y.
+
 ## Example scene
 
 `Examples/GridExampleScene` has a grid with a `GridPainter` component attached. Press Play and click or drag on the grid in the Game view to toggle nodes between free and occupied. Dragging paints or erases depending on the first node you touch. The painter picks nodes by intersecting the mouse ray with the grid's plane, so it needs no collider, and it uses the legacy Input Manager.

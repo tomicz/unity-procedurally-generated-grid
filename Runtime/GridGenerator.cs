@@ -37,6 +37,21 @@ namespace TOMICZ.Grid
             FlushColorsInEditMode();
         }
 
+        /// <summary>Index-based overload for callers that already hold a node index.</summary>
+        public void SetNodeColor(int nodeIndex, Color32 color)
+        {
+            if (_grid == null || nodeIndex < 0 || nodeIndex >= _grid.NodeCount) return;
+
+            _grid.SetNodeColor(nodeIndex, color);
+            FlushColorsInEditMode();
+        }
+
+        /// <summary>Marks every node as free.</summary>
+        public void ClearOccupancy()
+        {
+            _grid?.ClearOccupancy();
+        }
+
         /// <summary>Sets every node to one color.</summary>
         public void SetAllNodeColors(Color32 color)
         {

@@ -165,6 +165,99 @@ namespace TOMICZ.Grid.Tests
         }
 
         [Test]
+        public void GetNodeCoordinates_InvertsGetNodeIndex()
+        {
+            OptimizedGrid grid = MakeGrid(7, 3);
+
+            for (int i = 0; i < grid.NodeCount; i++)
+            {
+                grid.GetNodeCoordinates(i, out int x, out int y);
+                Assert.AreEqual(i, grid.GetNodeIndex(x, y));
+            }
+        }
+
+        [Test]
+        public void GetNeighbors_InteriorNode_HasFourOrthogonalAndEightWithDiagonals()
+        {
+            OptimizedGrid grid = MakeGrid(5, 5);
+            var buffer = new int[OptimizedGrid.MaxNeighbors];
+
+            Assert.AreEqual(4, grid.GetNeighbors(2, 2, buffer));
+            Assert.AreEqual(8, grid.GetNeighbors(2, 2, buffer, includeDiagonals: true));
+        }
+
+        [Test]
+        public void GetNeighbors_CornerNode_StaysInBounds()
+        {
+            OptimizedGrid grid = MakeGrid(5, 5);
+            var buffer = new int[OptimizedGrid.MaxNeighbors];
+
+            int count = grid.GetNeighbors(0, 0, buffer, includeDiagonals: true);
+
+            Assert.AreEqual(3, count);
+            CollectionAssert.AreEquivalent(
+                new[] { grid.GetNodeIndex(1, 0), grid.GetNodeIndex(0, 1), grid.GetNodeIndex(1, 1) },
+                new[] { buffer[0], buffer[1], buffer[2] });
+        }
+
+        [Test]
+        public void GetNeighbors_SkipsOccupiedNodesByDefault()
+        {
+            OptimizedGrid grid = MakeGrid(5, 5);
+            var buffer = new int[OptimizedGrid.MaxNeighbors];
+            grid.SetNodeOccupied(3, 2, true);
+
+            int count = grid.GetNeighbors(2, 2, buffer);
+
+            Assert.AreEqual(3, count);
+            CollectionAssert.DoesNotContain(new[] { buffer[0], buffer[1], buffer[2] }, grid.GetNodeIndex(3, 2));
+            Assert.AreEqual(4, grid.GetNeighbors(2, 2, buffer, skipOccupied: false));
+        }
+
+        [Test]
+        public void GetNeighbors_DoesNotCutCornersAroundObstacles()
+        {
+            OptimizedGrid grid = MakeGrid(5, 5);
+            var buffer = new int[OptimizedGrid.MaxNeighbors];
+            // Block the node to the right; the two diagonals on that side must vanish.
+            grid.SetNodeOccupied(3, 2, true);
+
+            int count = grid.GetNeighbors(2, 2, buffer, includeDiagonals: true);
+
+            Assert.AreEqual(5, count);
+            var found = new int[count];
+            System.Array.Copy(buffer, found, count);
+            CollectionAssert.DoesNotContain(found, grid.GetNodeIndex(3, 1));
+            CollectionAssert.DoesNotContain(found, grid.GetNodeIndex(3, 3));
+        }
+
+        [Test]
+        public void ClearOccupancy_FreesEveryNode()
+        {
+            OptimizedGrid grid = MakeGrid(3, 3);
+            grid.SetNodeOccupied(1, 1, true);
+            grid.SetNodeOccupied(2, 0, true);
+
+            grid.ClearOccupancy();
+
+            foreach (bool occupied in grid.Occupied)
+            {
+                Assert.IsFalse(occupied);
+            }
+        }
+
+        [Test]
+        public void SetNodeColor_ByIndex_MatchesCoordinateOverload()
+        {
+            OptimizedGrid grid = MakeGrid(4, 4);
+
+            grid.SetNodeColor(grid.GetNodeIndex(3, 1), Red);
+
+            AssertColor(Red, grid.GetNodeColor(3, 1));
+            AssertColor(Red, grid.Colors[grid.GetNodeIndex(3, 1) * OptimizedGrid.VerticesPerNode]);
+        }
+
+        [Test]
         public void SetNodeColor_UpdatesOnlyThatNodesFourVertices()
         {
             OptimizedGrid grid = MakeGrid(3, 3);
