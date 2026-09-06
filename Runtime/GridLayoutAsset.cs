@@ -13,7 +13,7 @@ namespace TOMICZ.Grid
         [SerializeField] private int _width;
         [SerializeField] private int _height;
         [SerializeField, HideInInspector] private bool[] _occupied = System.Array.Empty<bool>();
-        [SerializeField, HideInInspector] private Color32[] _nodeColors = System.Array.Empty<Color32>();
+        [SerializeField, HideInInspector] private byte[] _nodeColorBytes = System.Array.Empty<byte>();
 
         public int Width => _width;
         public int Height => _height;
@@ -21,8 +21,8 @@ namespace TOMICZ.Grid
 
         /// <summary>True when the stored arrays match the declared dimensions.</summary>
         public bool IsValid =>
-            _occupied != null && _nodeColors != null &&
-            _occupied.Length == NodeCount && _nodeColors.Length == NodeCount;
+            _occupied != null && _nodeColorBytes != null &&
+            _occupied.Length == NodeCount && _nodeColorBytes.Length == NodeCount * Color32Packing.BytesPerColor;
 
         /// <summary>Snapshots a grid's dimensions, occupancy and colors into this asset.</summary>
         public void CopyFrom(OptimizedGrid grid)
@@ -30,7 +30,7 @@ namespace TOMICZ.Grid
             _width = grid.GridWidth;
             _height = grid.GridHeight;
             _occupied = (bool[])grid.Occupied.Clone();
-            _nodeColors = (Color32[])grid.NodeColors.Clone();
+            _nodeColorBytes = Color32Packing.Pack(grid.NodeColors);
         }
 
         /// <summary>
@@ -44,9 +44,10 @@ namespace TOMICZ.Grid
 
             System.Array.Copy(_occupied, grid.Occupied, NodeCount);
 
+            Color32[] colors = Color32Packing.Unpack(_nodeColorBytes);
             for (int i = 0; i < NodeCount; i++)
             {
-                grid.SetNodeColor(i, _nodeColors[i]);
+                grid.SetNodeColor(i, colors[i]);
             }
 
             return true;

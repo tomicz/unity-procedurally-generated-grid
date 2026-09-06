@@ -166,6 +166,26 @@ namespace TOMICZ.Grid.Tests
         }
 
         [Test]
+        public void NodeColors_SerializeAsPackedBytesAndSurviveARoundTrip()
+        {
+            _generator.SetNodeColor(4, 4, Red);
+
+            var serialized = new SerializedObject(_generator);
+            SerializedProperty bytes = serialized.FindProperty("_nodeColorBytes");
+
+            Assert.IsNotNull(bytes, "packed color field is serialized");
+            Assert.AreEqual(100 * Color32Packing.BytesPerColor, bytes.arraySize);
+            Assert.IsNull(serialized.FindProperty("_nodeColors"), "Color32 array is not serialized");
+
+            // Applying any change deserializes the component again; the live grid must keep its colors.
+            SerializedProperty gizmos = serialized.FindProperty("_drawOccupiedGizmos");
+            gizmos.boolValue = !gizmos.boolValue;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+
+            AssertColor(Red, _generator.GetNodeColor(4, 4));
+        }
+
+        [Test]
         public void SetNodeColor_OutOfRange_DoesNotThrow()
         {
             Assert.DoesNotThrow(() => _generator.SetNodeColor(10, 0, Red));

@@ -6,7 +6,7 @@ namespace TOMICZ.Grid
     [ExecuteInEditMode]
     [RequireComponent(typeof(MeshFilter))]
     [RequireComponent(typeof(MeshRenderer))]
-    public class GridGenerator : MonoBehaviour
+    public class GridGenerator : MonoBehaviour, ISerializationCallbackReceiver
     {
         [SerializeField, FormerlySerializedAs("gridWidth")] private int _gridWidth = 10;
         [SerializeField, FormerlySerializedAs("gridHeight")] private int _gridHeight = 10;
@@ -20,7 +20,10 @@ namespace TOMICZ.Grid
         // Node state survives regeneration and scene saves. The grid works on
         // these arrays directly, so there is a single source of truth.
         [SerializeField, HideInInspector] private bool[] _occupied;
-        [SerializeField, HideInInspector] private Color32[] _nodeColors;
+        // Colors are serialized packed (see the ISerializationCallbackReceiver
+        // methods): a Color32[] costs three YAML lines per node, a byte[] one line.
+        [SerializeField, HideInInspector] private byte[] _nodeColorBytes;
+        private Color32[] _nodeColors;
         [SerializeField, HideInInspector] private int _stateWidth;
         [SerializeField, HideInInspector] private int _stateHeight;
 
@@ -160,6 +163,21 @@ namespace TOMICZ.Grid
             // in a player. It also restores the mesh after a domain reload.
             ApplyMaterial();
             RegenerateGrid();
+        }
+
+
+        void ISerializationCallbackReceiver.OnBeforeSerialize()
+        {
+            if (_nodeColors == null) return;
+
+            _nodeColorBytes = Color32Packing.Pack(_nodeColors, _nodeColorBytes);
+        }
+
+        void ISerializationCallbackReceiver.OnAfterDeserialize()
+        {
+            // Unpack into the existing array when the size matches, so a grid that
+            // already references it (after an undo, say) sees the restored values.
+            _nodeColors = Color32Packing.Unpack(_nodeColorBytes, _nodeColors);
         }
 
         private void OnDestroy()
