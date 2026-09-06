@@ -43,21 +43,11 @@ namespace TOMICZ.Grid
             _grid.LoadMeshData(_mesh);
         }
 
-        private void Awake()
-        {
-            Material gridMaterial = new Material(Shader.Find("Custom/VertexColor"));
-            Renderer renderer = GetComponent<Renderer>();
-
-            if (renderer != null)
-            {
-                renderer.material = gridMaterial;
-            }
-        }
-
         private void OnEnable()
         {
             // OnValidate only runs in the editor, so this is what builds the grid
             // in a player. It also restores the mesh after a domain reload.
+            ApplyMaterial();
             RegenerateGrid();
         }
 
@@ -86,6 +76,15 @@ namespace TOMICZ.Grid
                 RegenerateGrid();
             };
 #endif
+        }
+
+        private void ApplyMaterial()
+        {
+            if (_defaultMaterial == null) return;
+
+            // sharedMaterial avoids instantiating a copy per component, which
+            // leaks a material into the scene every time Awake runs in edit mode.
+            GetComponent<MeshRenderer>().sharedMaterial = _defaultMaterial;
         }
 
         private void EnsureMesh()
