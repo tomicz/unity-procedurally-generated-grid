@@ -162,6 +162,9 @@ namespace TOMICZ.Grid
 
         public void SetNodeColor(int x, int y, Color color)
         {
+            if (x < 0 || x >= GridWidth || y < 0 || y >= GridHeight)
+                return;
+
             foreach (GridMeshSection section in MeshSections)
             {
                 if (y >= section.StartY && y < section.StartY + section.Height)
