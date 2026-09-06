@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -6,7 +5,8 @@ namespace TOMICZ.Grid
 {
     public class OptimizedGrid
     {
-        private const int VerticesPerNode = 4;
+        public const int VerticesPerNode = 4;
+        public const int IndicesPerNode = 6;
 
         public int GridWidth { get; private set; }
         public int GridHeight { get; private set; }
@@ -16,9 +16,9 @@ namespace TOMICZ.Grid
         public bool IsHorizontal { get; private set; }
         public int NodeCount => GridWidth > 0 && GridHeight > 0 ? GridWidth * GridHeight : 0;
 
-        public List<Vector3> Vertices { get; private set; } = new();
-        public List<int> Triangles { get; private set; } = new();
-        public List<Color> Colors { get; private set; } = new();
+        public Vector3[] Vertices { get; private set; } = System.Array.Empty<Vector3>();
+        public int[] Triangles { get; private set; } = System.Array.Empty<int>();
+        public Color[] Colors { get; private set; } = System.Array.Empty<Color>();
 
         /// <summary>Per-node occupancy, indexed by <c>y * GridWidth + x</c>.</summary>
         public bool[] Occupied { get; private set; }
@@ -96,76 +96,75 @@ namespace TOMICZ.Grid
             NodeColors[nodeIndex] = color;
 
             // Mirror into the vertex buffer if the mesh data has been generated.
-            if (Colors.Count == NodeCount * VerticesPerNode)
+            if (Colors.Length == NodeCount * VerticesPerNode)
             {
-                int vertexIndex = nodeIndex * VerticesPerNode;
-                for (int i = 0; i < VerticesPerNode; i++)
-                {
-                    Colors[vertexIndex + i] = color;
-                }
+                int v = nodeIndex * VerticesPerNode;
+                Colors[v] = color;
+                Colors[v + 1] = color;
+                Colors[v + 2] = color;
+                Colors[v + 3] = color;
             }
         }
 
         public void GenerateGrid(bool isHorizontal = false)
         {
             IsHorizontal = isHorizontal;
-            Vertices.Clear();
-            Triangles.Clear();
-            Colors.Clear();
 
-            if (GridWidth <= 0 || GridHeight <= 0)
+            // Every size is known up front, so allocate each buffer exactly once
+            // and write by index instead of growing lists with temporary arrays.
+            int nodeCount = NodeCount;
+            Vertices = new Vector3[nodeCount * VerticesPerNode];
+            Triangles = new int[nodeCount * IndicesPerNode];
+            Colors = new Color[nodeCount * VerticesPerNode];
+
+            if (nodeCount == 0)
                 return;
 
-            float totalWidth = GridWidth * (NodeWidth + Spacing) - Spacing;
-            float totalHeight = GridHeight * (NodeHeight + Spacing) - Spacing;
-            float startX = -totalWidth / 2f;
-            float startY = -totalHeight / 2f;
-
-            int vertexIndex = 0;
+            float stepX = NodeWidth + Spacing;
+            float stepY = NodeHeight + Spacing;
+            float startX = -(GridWidth * stepX - Spacing) / 2f;
+            float startY = -(GridHeight * stepY - Spacing) / 2f;
 
             for (int y = 0; y < GridHeight; y++)
             {
+                float yPos = startY + y * stepY;
+
                 for (int x = 0; x < GridWidth; x++)
                 {
-                    float xPos = startX + x * (NodeWidth + Spacing);
-                    float yPos = startY + y * (NodeHeight + Spacing);
+                    float xPos = startX + x * stepX;
+                    int nodeIndex = y * GridWidth + x;
+                    int v = nodeIndex * VerticesPerNode;
+                    int t = nodeIndex * IndicesPerNode;
 
-                    AddNode(xPos, yPos, vertexIndex, NodeColors[GetNodeIndex(x, y)], isHorizontal);
-                    vertexIndex += VerticesPerNode;
+                    if (isHorizontal)
+                    {
+                        Vertices[v] = new Vector3(xPos, 0, yPos);
+                        Vertices[v + 1] = new Vector3(xPos + NodeWidth, 0, yPos);
+                        Vertices[v + 2] = new Vector3(xPos, 0, yPos + NodeHeight);
+                        Vertices[v + 3] = new Vector3(xPos + NodeWidth, 0, yPos + NodeHeight);
+                    }
+                    else
+                    {
+                        Vertices[v] = new Vector3(xPos, yPos, 0);
+                        Vertices[v + 1] = new Vector3(xPos + NodeWidth, yPos, 0);
+                        Vertices[v + 2] = new Vector3(xPos, yPos + NodeHeight, 0);
+                        Vertices[v + 3] = new Vector3(xPos + NodeWidth, yPos + NodeHeight, 0);
+                    }
+
+                    Color color = NodeColors[nodeIndex];
+                    Colors[v] = color;
+                    Colors[v + 1] = color;
+                    Colors[v + 2] = color;
+                    Colors[v + 3] = color;
+
+                    Triangles[t] = v;
+                    Triangles[t + 1] = v + 2;
+                    Triangles[t + 2] = v + 1;
+                    Triangles[t + 3] = v + 2;
+                    Triangles[t + 4] = v + 3;
+                    Triangles[t + 5] = v + 1;
                 }
             }
-        }
-
-        private void AddNode(float xPos, float yPos, int vertexIndex, Color color, bool isHorizontal)
-        {
-            if (isHorizontal)
-            {
-                Vertices.AddRange(new[]
-                {
-                    new Vector3(xPos, 0, yPos),
-                    new Vector3(xPos + NodeWidth, 0, yPos),
-                    new Vector3(xPos, 0, yPos + NodeHeight),
-                    new Vector3(xPos + NodeWidth, 0, yPos + NodeHeight)
-                });
-            }
-            else
-            {
-                Vertices.AddRange(new[]
-                {
-                    new Vector3(xPos, yPos, 0),
-                    new Vector3(xPos + NodeWidth, yPos, 0),
-                    new Vector3(xPos, yPos + NodeHeight, 0),
-                    new Vector3(xPos + NodeWidth, yPos + NodeHeight, 0)
-                });
-            }
-
-            Colors.AddRange(new[] { color, color, color, color });
-
-            Triangles.AddRange(new[]
-            {
-                vertexIndex, vertexIndex + 2, vertexIndex + 1,
-                vertexIndex + 2, vertexIndex + 3, vertexIndex + 1
-            });
         }
 
         public void LoadMeshData(Mesh mesh)
@@ -173,12 +172,16 @@ namespace TOMICZ.Grid
             if (mesh == null) return;
 
             mesh.Clear();
+
+            if (Vertices.Length == 0)
+                return;
+
             // 16-bit indices cap a mesh at 65,535 vertices. Switching to 32-bit
             // lifts that to ~4 billion, so a single mesh can hold any grid size.
-            mesh.indexFormat = Vertices.Count > ushort.MaxValue ? IndexFormat.UInt32 : IndexFormat.UInt16;
-            mesh.vertices = Vertices.ToArray();
-            mesh.triangles = Triangles.ToArray();
-            mesh.colors = Colors.ToArray();
+            mesh.indexFormat = Vertices.Length > ushort.MaxValue ? IndexFormat.UInt32 : IndexFormat.UInt16;
+            mesh.SetVertices(Vertices);
+            mesh.SetTriangles(Triangles, 0);
+            mesh.SetColors(Colors);
             mesh.RecalculateNormals();
         }
     }
