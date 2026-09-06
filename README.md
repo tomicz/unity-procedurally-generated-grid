@@ -1,57 +1,78 @@
-
 <p align="center">
 <img src="https://media.giphy.com/media/mdFObXCvTojzmWnQvf/giphy.gif" alt="Grid animation" title="Grid GIF" width="500"/>
 </p>
 
-# About
+# Procedural Grid
 
-The Optimized Grid is a procedurally generated grid system that boasts exceptional performance, making it ideal for individuals seeking to learn about optimization and memory management. This tool eliminates the need for object pooling with Unity's GameObjects, making it a perfect tool for those looking to practice pathfinding."
+A procedurally generated grid for Unity, rendered as a single vertex-colored mesh. Every cell is four vertices in one mesh rather than a GameObject, so even a very large grid is one object and one draw call. Each node carries an occupancy flag and a color, which makes it a good base for pathfinding visualisation.
+
+# Installation
+
+In the Package Manager choose *Add package from git URL* and paste:
+
+```
+https://github.com/tomicz/unity-procedurally-generated-grid.git
+```
+
+Or copy the repository into your project's `Packages` folder. Requires Unity 2021.3 or newer.
+
 # Getting started
 
-Do not forget to add a namespace.
-```
-using Tomicz.Grid;
+## In the editor
 
-```	
-Before proceeding, please ensure that the necessary reference dependencies have been added. Specifically, confirm that both MeshFilter and MeshRenderer components have been appropriately attached to the designated gameObject.
-```
-private Mesh _mesh;
-private OptimizedGrid _grid;
-```
-If required for real-time updates in your application or game, you can invoke this function within an Update loop with the [ExecuteInEditMode] attribute. For optimal performance, it is recommended to update the grid using sliders or alternative input methods.
-```		
-private void Start()
+Add the `GridGenerator` component to an empty GameObject. It adds the MeshFilter and MeshRenderer it needs, builds the mesh, and rebuilds it whenever you change a value in the inspector. Assign `Materials/GridMaterial` to its material field, or any material that reads vertex colors.
+
+The included `Custom/VertexColor` shader is unlit and the mesh carries no normals. A lit material would need normals added.
+
+Node colors and occupancy set through the component are serialized with the scene and survive regeneration. When you resize the grid, the overlapping region keeps its state and new nodes start empty and white.
+
+```csharp
+using TOMICZ.Grid;
+using UnityEngine;
+
+public class Example : MonoBehaviour
 {
-	// Get dependencies
-	_mesh = GetComponent<MeshFilter>().sharedMesh;
+    [SerializeField] private GridGenerator _grid;
 
-	// Create an instance of a grid
-	_grid = new OptimizedGrid(gridWidth, gridHeight, nodeWidth, nodeHeight, spacing);
+    private void Start()
+    {
+        _grid.SetNodeOccupied(3, 4, true);
+        _grid.SetNodeColor(3, 4, Color.red);
 
-	// Always clal after the instance.
-	_grid.GenerateGrid();
-	
-	// Loads vertices and triangles to a mesh
-	LoadMeshData(_mesh);
-}
-
-```
-
-By calling this method, both triangles and vertices will be loaded into the mesh, while all normals will be recalculated as well.
-```
-private void LoadMeshData(Mesh mesh)
-{
-    mesh.Clear();
-
-    mesh.vertices = _grid.Vertices;
-    mesh.triangles = _grid.Triangles;
-
-    mesh.RecalculateNormals();
+        bool blocked = _grid.IsNodeOccupied(3, 4);
+    }
 }
 ```
 
-# Limitations
+## From code
 
-* Please be advised that Unity imposes a limit of 55,000 vertices per object, which equates to a maximum display of 14,400 quads.
+`OptimizedGrid` is a plain C# class with no scene dependencies. Use it directly when you want to drive your own mesh or run it outside a MonoBehaviour.
 
-* It is important to note that each quad is comprised of 6 angles or two triangles, and that Unity mesh triangles exclusively support integer values. Consequently, it is possible to reach an integer limit.
+```csharp
+using TOMICZ.Grid;
+
+var grid = new OptimizedGrid(gridWidth: 50, gridHeight: 50, nodeWidth: 1f, nodeHeight: 1f, spacing: 0.1f);
+grid.GenerateGrid(isHorizontal: true);   // XZ plane facing up; false for the XY plane
+grid.LoadMeshData(mesh);                 // uploads vertices, triangles and colors
+
+grid.SetNodeColor(10, 12, Color.green);
+grid.LoadMeshColors(mesh);               // uploads only the color buffer
+```
+
+Nodes are indexed by `y * GridWidth + x`. `GetNodeIndex`, `IsInBounds`, `Occupied` and `NodeColors` are public for pathfinding code that wants raw array access.
+
+# Running the tests
+
+Edit-mode tests live under `Tests/Editor`. To see them in the Test Runner of a project that installs this package, list the package in that project's `Packages/manifest.json`:
+
+```json
+"testables": ["com.tomicz.procedural-grid"]
+```
+
+# Size
+
+A node is four vertices and six indices, about 90 bytes of mesh data. The mesh switches to 32-bit indices automatically once it passes 65,535 vertices, so there is no hard cap on grid size beyond memory.
+
+# License
+
+MIT. See `LICENSE.md`.
