@@ -30,10 +30,21 @@ namespace TOMICZ.Grid
             _grid.LoadMeshData(_mesh);
         }
 
-        private void Awake()
+        /// <summary>
+        /// Rebuilds the grid and its mesh from the current settings.
+        /// Runs automatically on enable and whenever a value changes in the inspector.
+        /// </summary>
+        public void RegenerateGrid()
         {
             EnsureMesh();
 
+            _grid = new OptimizedGrid(_gridWidth, _gridHeight, _nodeWidth, _nodeHeight, _spacing);
+            _grid.GenerateGrid(_isHorizontal);
+            _grid.LoadMeshData(_mesh);
+        }
+
+        private void Awake()
+        {
             Material gridMaterial = new Material(Shader.Find("Custom/VertexColor"));
             Renderer renderer = GetComponent<Renderer>();
 
@@ -43,38 +54,64 @@ namespace TOMICZ.Grid
             }
         }
 
+        private void OnEnable()
+        {
+            // OnValidate only runs in the editor, so this is what builds the grid
+            // in a player. It also restores the mesh after a domain reload.
+            RegenerateGrid();
+        }
+
+        private void OnDestroy()
+        {
+            if (_mesh != null && (_mesh.hideFlags & HideFlags.DontSave) != 0)
+            {
+                if (Application.isPlaying)
+                    Destroy(_mesh);
+                else
+                    DestroyImmediate(_mesh);
+            }
+        }
+
         private void OnValidate()
         {
-            EnsureMesh();
-
             _gridWidth = Mathf.Max(0, _gridWidth);
             _gridHeight = Mathf.Max(0, _gridHeight);
 
-            RegenerateGrid();
+#if UNITY_EDITOR
+            // Unity disallows creating or destroying objects inside OnValidate,
+            // so the rebuild is deferred to the next editor update.
+            UnityEditor.EditorApplication.delayCall += () =>
+            {
+                if (this == null || !isActiveAndEnabled) return;
+                RegenerateGrid();
+            };
+#endif
         }
 
         private void EnsureMesh()
         {
-            if (_mesh != null) return;
-
             var meshFilter = GetComponent<MeshFilter>();
-            if (meshFilter.sharedMesh == null)
+
+            if (_mesh == null)
             {
-                _mesh = new Mesh();
-                _mesh.name = "Grid Mesh";
+                // Reuse a mesh this component created earlier (it survives domain
+                // reloads), but never adopt a saved mesh: the grid is always rebuilt
+                // from its settings, so saving it into the scene is pure bloat.
+                Mesh existing = meshFilter.sharedMesh;
+                if (existing != null && (existing.hideFlags & HideFlags.DontSave) != 0)
+                {
+                    _mesh = existing;
+                }
+                else
+                {
+                    _mesh = new Mesh { name = "Grid Mesh", hideFlags = HideFlags.DontSave };
+                }
+            }
+
+            if (meshFilter.sharedMesh != _mesh)
+            {
                 meshFilter.sharedMesh = _mesh;
             }
-            else
-            {
-                _mesh = meshFilter.sharedMesh;
-            }
-        }
-
-        private void RegenerateGrid()
-        {
-            _grid = new OptimizedGrid(_gridWidth, _gridHeight, _nodeWidth, _nodeHeight, _spacing);
-            _grid.GenerateGrid(_isHorizontal);
-            _grid.LoadMeshData(_mesh);
         }
     }
 }
