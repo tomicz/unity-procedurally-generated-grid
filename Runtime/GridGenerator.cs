@@ -15,6 +15,7 @@ namespace TOMICZ.Grid
         [SerializeField, FormerlySerializedAs("nodeHeight")] private float _nodeHeight = 1f;
         [SerializeField, FormerlySerializedAs("isHorizontal")] private bool _isHorizontal;
         [SerializeField] private Material _defaultMaterial;
+        [SerializeField] private bool _drawOccupiedGizmos = true;
 
         // Node state survives regeneration and scene saves. The grid works on
         // these arrays directly, so there is a single source of truth.
@@ -207,6 +208,29 @@ namespace TOMICZ.Grid
             // sharedMaterial avoids instantiating a copy per component, which
             // leaks a material into the scene every time Awake runs in edit mode.
             GetComponent<MeshRenderer>().sharedMaterial = _defaultMaterial;
+        }
+
+        // Drawing a cube per occupied node is fine for editing-sized grids but not
+        // for huge ones, so the overlay switches off past this many nodes.
+        private const int MaxGizmoNodes = 65536;
+
+        private void OnDrawGizmosSelected()
+        {
+            if (!_drawOccupiedGizmos || _grid == null || _grid.NodeCount > MaxGizmoNodes) return;
+
+            Gizmos.matrix = transform.localToWorldMatrix;
+            Gizmos.color = new Color(1f, 0.25f, 0.25f, 0.6f);
+            Vector3 size = _grid.IsHorizontal
+                ? new Vector3(_grid.NodeWidth, 0.02f, _grid.NodeHeight)
+                : new Vector3(_grid.NodeWidth, _grid.NodeHeight, 0.02f);
+
+            for (int i = 0; i < _grid.NodeCount; i++)
+            {
+                if (!_grid.Occupied[i]) continue;
+
+                _grid.GetNodeCoordinates(i, out int x, out int y);
+                Gizmos.DrawCube(_grid.GetNodeCenter(x, y), size);
+            }
         }
 
         private void EnsureMesh()
