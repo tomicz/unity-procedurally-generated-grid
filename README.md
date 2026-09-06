@@ -90,6 +90,10 @@ if (pathfinder.FindPath(0, 0, 20, 15, path))
 
 The path is a list of node indices from start to goal inclusive. `WasVisited(index)` and `LastVisitedCount` describe the nodes the search expanded, which is handy for drawing the explored area.
 
+## Saving layouts
+
+Occupancy and colors are saved with the scene, but a `GridLayoutAsset` lets you keep a layout as its own asset, share it between scenes, or swap layouts at runtime. Create one with *Assets > Create > Procedural Grid > Layout*, then call `SaveLayout(asset)` to snapshot the current grid and `LoadLayout(asset)` to apply it. Loading resizes the grid to the asset's dimensions if they differ.
+
 ## Example scene
 
 `Examples/GridExampleScene` has a grid with a `GridPainter` component attached. Press Play and click or drag on the grid in the Game view to toggle nodes between free and occupied. Dragging paints or erases depending on the first node you touch. Right-click once to place a start marker and again to place the goal, and the `GridPathDemo` component draws the A* path in yellow with the explored area in grey, refreshing whenever you paint. Both scripts pick nodes by intersecting the mouse ray with the grid's plane, so no collider is needed, and both use the legacy Input Manager.

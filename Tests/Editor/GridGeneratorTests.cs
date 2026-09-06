@@ -130,6 +130,42 @@ namespace TOMICZ.Grid.Tests
         }
 
         [Test]
+        public void SaveLayout_ThenLoadLayout_RestoresStateAndDimensions()
+        {
+            var layout = ScriptableObject.CreateInstance<GridLayoutAsset>();
+            try
+            {
+                _generator.SetNodeOccupied(2, 2, true);
+                _generator.SetNodeColor(7, 3, Red);
+                _generator.SaveLayout(layout);
+
+                SetDimensions(5, 5);
+                _generator.RegenerateGrid();
+                _generator.SetNodeOccupied(0, 0, true);
+
+                Assert.IsTrue(_generator.LoadLayout(layout));
+
+                Assert.AreEqual(10, _generator.Grid.GridWidth);
+                Assert.AreEqual(10, _generator.Grid.GridHeight);
+                Assert.IsTrue(_generator.IsNodeOccupied(2, 2));
+                Assert.IsFalse(_generator.IsNodeOccupied(0, 0));
+                AssertColor(Red, _generator.GetNodeColor(7, 3));
+                Assert.AreEqual(400, SharedMesh().vertexCount);
+                AssertColor(Red, SharedMesh().colors32[_generator.Grid.GetNodeIndex(7, 3) * OptimizedGrid.VerticesPerNode]);
+            }
+            finally
+            {
+                Object.DestroyImmediate(layout);
+            }
+        }
+
+        [Test]
+        public void LoadLayout_Null_ReturnsFalse()
+        {
+            Assert.IsFalse(_generator.LoadLayout(null));
+        }
+
+        [Test]
         public void SetNodeColor_OutOfRange_DoesNotThrow()
         {
             Assert.DoesNotThrow(() => _generator.SetNodeColor(10, 0, Red));

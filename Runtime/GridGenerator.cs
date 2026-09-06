@@ -52,6 +52,37 @@ namespace TOMICZ.Grid
             _grid?.ClearOccupancy();
         }
 
+        /// <summary>Snapshots the current dimensions, occupancy and colors into the asset.</summary>
+        public void SaveLayout(GridLayoutAsset layout)
+        {
+            if (_grid == null || layout == null) return;
+
+            layout.CopyFrom(_grid);
+#if UNITY_EDITOR
+            UnityEditor.EditorUtility.SetDirty(layout);
+#endif
+        }
+
+        /// <summary>
+        /// Applies a saved layout. The grid is resized to the layout's dimensions
+        /// first if they differ. Returns false if the layout is null or invalid.
+        /// </summary>
+        public bool LoadLayout(GridLayoutAsset layout)
+        {
+            if (layout == null || !layout.IsValid) return false;
+
+            if (_grid == null || _gridWidth != layout.Width || _gridHeight != layout.Height)
+            {
+                _gridWidth = layout.Width;
+                _gridHeight = layout.Height;
+                RegenerateGrid();
+            }
+
+            bool loaded = layout.CopyTo(_grid);
+            FlushColorsInEditMode();
+            return loaded;
+        }
+
         /// <summary>Sets every node to one color.</summary>
         public void SetAllNodeColors(Color32 color)
         {
