@@ -34,7 +34,7 @@ namespace TOMICZ.Grid
             if (_grid == null) return;
 
             _grid.SetNodeColor(x, y, color);
-            _grid.LoadMeshData(_mesh);
+            _grid.LoadMeshColors(_mesh);
         }
 
         public Color GetNodeColor(int x, int y)

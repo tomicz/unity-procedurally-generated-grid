@@ -182,7 +182,19 @@ namespace TOMICZ.Grid
             mesh.SetVertices(Vertices);
             mesh.SetTriangles(Triangles, 0);
             mesh.SetColors(Colors);
-            mesh.RecalculateNormals();
+            // No normals: the vertex-color shader never reads them, and a flat
+            // grid would only ever have one constant normal anyway.
+        }
+
+        /// <summary>
+        /// Uploads only the vertex colors. Call after SetNodeColor instead of a full
+        /// LoadMeshData, which would re-upload geometry that has not changed.
+        /// </summary>
+        public void LoadMeshColors(Mesh mesh)
+        {
+            if (mesh == null || mesh.vertexCount != Colors.Length) return;
+
+            mesh.SetColors(Colors);
         }
     }
 }
