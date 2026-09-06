@@ -14,39 +14,96 @@ namespace TOMICZ.Grid
         public float NodeHeight { get; private set; }
         public float Spacing { get; private set; }
         public bool IsHorizontal { get; private set; }
+        public int NodeCount => GridWidth > 0 && GridHeight > 0 ? GridWidth * GridHeight : 0;
 
         public List<Vector3> Vertices { get; private set; } = new();
         public List<int> Triangles { get; private set; } = new();
         public List<Color> Colors { get; private set; } = new();
 
-        private bool[,] _occupiedNodes;
-        private Color _defaultColor = Color.white;
+        /// <summary>Per-node occupancy, indexed by <c>y * GridWidth + x</c>.</summary>
+        public bool[] Occupied { get; private set; }
 
-        public OptimizedGrid(int gridWidth, int gridHeight, float nodeWidth, float nodeHeight, float spacing)
+        /// <summary>Per-node color, indexed by <c>y * GridWidth + x</c>.</summary>
+        public Color[] NodeColors { get; private set; }
+
+        /// <summary>
+        /// Creates a grid. If <paramref name="occupied"/> or <paramref name="nodeColors"/>
+        /// are supplied with exactly <c>gridWidth * gridHeight</c> entries, the grid uses
+        /// those arrays directly, so an owner can serialize them and hand them back to
+        /// a rebuilt grid to keep node state across regeneration.
+        /// </summary>
+        public OptimizedGrid(int gridWidth, int gridHeight, float nodeWidth, float nodeHeight, float spacing,
+            bool[] occupied = null, Color[] nodeColors = null)
         {
             GridWidth = gridWidth;
             GridHeight = gridHeight;
             NodeWidth = nodeWidth;
             NodeHeight = nodeHeight;
             Spacing = spacing;
-            _occupiedNodes = new bool[gridWidth, gridHeight];
+
+            int nodeCount = NodeCount;
+
+            Occupied = occupied != null && occupied.Length == nodeCount
+                ? occupied
+                : new bool[nodeCount];
+
+            if (nodeColors != null && nodeColors.Length == nodeCount)
+            {
+                NodeColors = nodeColors;
+            }
+            else
+            {
+                NodeColors = new Color[nodeCount];
+                for (int i = 0; i < nodeCount; i++)
+                {
+                    NodeColors[i] = Color.white;
+                }
+            }
+        }
+
+        public bool IsInBounds(int x, int y)
+        {
+            return x >= 0 && x < GridWidth && y >= 0 && y < GridHeight;
+        }
+
+        public int GetNodeIndex(int x, int y)
+        {
+            return y * GridWidth + x;
         }
 
         public void SetNodeOccupied(int x, int y, bool occupied)
         {
-            if (x >= 0 && x < GridWidth && y >= 0 && y < GridHeight)
-            {
-                _occupiedNodes[x, y] = occupied;
-            }
+            if (!IsInBounds(x, y)) return;
+
+            Occupied[GetNodeIndex(x, y)] = occupied;
         }
 
         public bool IsNodeOccupied(int x, int y)
         {
-            if (x >= 0 && x < GridWidth && y >= 0 && y < GridHeight)
+            return IsInBounds(x, y) && Occupied[GetNodeIndex(x, y)];
+        }
+
+        public Color GetNodeColor(int x, int y)
+        {
+            return IsInBounds(x, y) ? NodeColors[GetNodeIndex(x, y)] : default;
+        }
+
+        public void SetNodeColor(int x, int y, Color color)
+        {
+            if (!IsInBounds(x, y)) return;
+
+            int nodeIndex = GetNodeIndex(x, y);
+            NodeColors[nodeIndex] = color;
+
+            // Mirror into the vertex buffer if the mesh data has been generated.
+            if (Colors.Count == NodeCount * VerticesPerNode)
             {
-                return _occupiedNodes[x, y];
+                int vertexIndex = nodeIndex * VerticesPerNode;
+                for (int i = 0; i < VerticesPerNode; i++)
+                {
+                    Colors[vertexIndex + i] = color;
+                }
             }
-            return false;
         }
 
         public void GenerateGrid(bool isHorizontal = false)
@@ -73,13 +130,13 @@ namespace TOMICZ.Grid
                     float xPos = startX + x * (NodeWidth + Spacing);
                     float yPos = startY + y * (NodeHeight + Spacing);
 
-                    AddNode(xPos, yPos, vertexIndex, isHorizontal);
+                    AddNode(xPos, yPos, vertexIndex, NodeColors[GetNodeIndex(x, y)], isHorizontal);
                     vertexIndex += VerticesPerNode;
                 }
             }
         }
 
-        private void AddNode(float xPos, float yPos, int vertexIndex, bool isHorizontal)
+        private void AddNode(float xPos, float yPos, int vertexIndex, Color color, bool isHorizontal)
         {
             if (isHorizontal)
             {
@@ -102,7 +159,7 @@ namespace TOMICZ.Grid
                 });
             }
 
-            Colors.AddRange(new[] { _defaultColor, _defaultColor, _defaultColor, _defaultColor });
+            Colors.AddRange(new[] { color, color, color, color });
 
             Triangles.AddRange(new[]
             {
@@ -123,19 +180,6 @@ namespace TOMICZ.Grid
             mesh.triangles = Triangles.ToArray();
             mesh.colors = Colors.ToArray();
             mesh.RecalculateNormals();
-        }
-
-        public void SetNodeColor(int x, int y, Color color)
-        {
-            if (x < 0 || x >= GridWidth || y < 0 || y >= GridHeight)
-                return;
-
-            int vertexIndex = (y * GridWidth + x) * VerticesPerNode;
-
-            for (int i = 0; i < VerticesPerNode; i++)
-            {
-                Colors[vertexIndex + i] = color;
-            }
         }
     }
 }

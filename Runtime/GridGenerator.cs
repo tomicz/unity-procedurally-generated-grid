@@ -16,6 +16,13 @@ namespace TOMICZ.Grid
         [SerializeField, FormerlySerializedAs("isHorizontal")] private bool _isHorizontal;
         [SerializeField] private Material _defaultMaterial;
 
+        // Node state survives regeneration and scene saves. The grid works on
+        // these arrays directly, so there is a single source of truth.
+        [SerializeField, HideInInspector] private bool[] _occupied;
+        [SerializeField, HideInInspector] private Color[] _nodeColors;
+        [SerializeField, HideInInspector] private int _stateWidth;
+        [SerializeField, HideInInspector] private int _stateHeight;
+
         private Mesh _mesh;
         private OptimizedGrid _grid;
 
@@ -30,15 +37,33 @@ namespace TOMICZ.Grid
             _grid.LoadMeshData(_mesh);
         }
 
+        public Color GetNodeColor(int x, int y)
+        {
+            return _grid != null ? _grid.GetNodeColor(x, y) : default;
+        }
+
+        public void SetNodeOccupied(int x, int y, bool occupied)
+        {
+            _grid?.SetNodeOccupied(x, y, occupied);
+        }
+
+        public bool IsNodeOccupied(int x, int y)
+        {
+            return _grid != null && _grid.IsNodeOccupied(x, y);
+        }
+
         /// <summary>
-        /// Rebuilds the grid and its mesh from the current settings.
+        /// Rebuilds the grid and its mesh from the current settings. Node occupancy
+        /// and colors are kept; when the dimensions change, the overlapping region
+        /// is preserved and new nodes start empty and white.
         /// Runs automatically on enable and whenever a value changes in the inspector.
         /// </summary>
         public void RegenerateGrid()
         {
             EnsureMesh();
+            SyncNodeState();
 
-            _grid = new OptimizedGrid(_gridWidth, _gridHeight, _nodeWidth, _nodeHeight, _spacing);
+            _grid = new OptimizedGrid(_gridWidth, _gridHeight, _nodeWidth, _nodeHeight, _spacing, _occupied, _nodeColors);
             _grid.GenerateGrid(_isHorizontal);
             _grid.LoadMeshData(_mesh);
         }
@@ -111,6 +136,41 @@ namespace TOMICZ.Grid
             {
                 meshFilter.sharedMesh = _mesh;
             }
+        }
+
+        private void SyncNodeState()
+        {
+            _occupied = ResizeNodeState(_occupied, _stateWidth, _stateHeight, _gridWidth, _gridHeight, false);
+            _nodeColors = ResizeNodeState(_nodeColors, _stateWidth, _stateHeight, _gridWidth, _gridHeight, Color.white);
+            _stateWidth = _gridWidth;
+            _stateHeight = _gridHeight;
+        }
+
+        private static T[] ResizeNodeState<T>(T[] source, int oldWidth, int oldHeight, int newWidth, int newHeight, T fill)
+        {
+            int newCount = Mathf.Max(0, newWidth) * Mathf.Max(0, newHeight);
+            bool sourceValid = source != null && source.Length == Mathf.Max(0, oldWidth) * Mathf.Max(0, oldHeight);
+
+            if (sourceValid && oldWidth == newWidth && oldHeight == newHeight)
+                return source;
+
+            var result = new T[newCount];
+            for (int i = 0; i < newCount; i++)
+            {
+                result[i] = fill;
+            }
+
+            if (sourceValid)
+            {
+                int copyWidth = Mathf.Min(oldWidth, newWidth);
+                int copyHeight = Mathf.Min(oldHeight, newHeight);
+                for (int y = 0; y < copyHeight; y++)
+                {
+                    System.Array.Copy(source, y * oldWidth, result, y * newWidth, copyWidth);
+                }
+            }
+
+            return result;
         }
     }
 }
