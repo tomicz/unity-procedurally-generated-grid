@@ -61,6 +61,10 @@ grid.LoadMeshColors(mesh);               // uploads only the color buffer
 
 Nodes are indexed by `y * GridWidth + x`. `GetNodeIndex`, `IsInBounds`, `Occupied` and `NodeColors` are public for pathfinding code that wants raw array access.
 
+## Coordinates
+
+`NodeToWorld(x, y)` returns the world-space center of a node, and `WorldToNode(position, out x, out y)` maps a world position back to a node, returning false outside the grid. A position that lands in a spacing gap belongs to the node before the gap. The plain `OptimizedGrid` offers the same in local space as `GetNodeCenter` and `TryGetNode`.
+
 # Running the tests
 
 Edit-mode tests live under `Tests/Editor`. To see them in the Test Runner of a project that installs this package, list the package in that project's `Packages/manifest.json`:

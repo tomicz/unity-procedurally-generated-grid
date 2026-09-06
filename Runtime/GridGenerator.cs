@@ -52,6 +52,24 @@ namespace TOMICZ.Grid
             return _grid != null && _grid.IsNodeOccupied(x, y);
         }
 
+        /// <summary>World-space center of a node.</summary>
+        public Vector3 NodeToWorld(int x, int y)
+        {
+            return _grid != null ? transform.TransformPoint(_grid.GetNodeCenter(x, y)) : transform.position;
+        }
+
+        /// <summary>Maps a world position to node coordinates. Returns false outside the grid.</summary>
+        public bool WorldToNode(Vector3 worldPosition, out int x, out int y)
+        {
+            if (_grid == null)
+            {
+                x = y = -1;
+                return false;
+            }
+
+            return _grid.TryGetNode(transform.InverseTransformPoint(worldPosition), out x, out y);
+        }
+
         /// <summary>
         /// Rebuilds the grid and its mesh from the current settings. Node occupancy
         /// and colors are kept; when the dimensions change, the overlapping region

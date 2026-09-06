@@ -95,6 +95,19 @@ namespace TOMICZ.Grid.Tests
         }
 
         [Test]
+        public void WorldToNode_AccountsForTheTransform()
+        {
+            _gameObject.transform.SetPositionAndRotation(new Vector3(10f, 0f, -3f), Quaternion.Euler(0f, 0f, 90f));
+
+            Vector3 world = _generator.NodeToWorld(7, 2);
+
+            Assert.IsTrue(_generator.WorldToNode(world, out int x, out int y));
+            Assert.AreEqual(7, x);
+            Assert.AreEqual(2, y);
+            Assert.IsFalse(_generator.WorldToNode(new Vector3(1000f, 0f, 0f), out _, out _));
+        }
+
+        [Test]
         public void SetNodeColor_OutOfRange_DoesNotThrow()
         {
             Assert.DoesNotThrow(() => _generator.SetNodeColor(10, 0, Red));

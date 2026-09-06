@@ -96,6 +96,75 @@ namespace TOMICZ.Grid.Tests
         }
 
         [Test]
+        public void GetNodeCenter_MatchesGeneratedQuadCenter()
+        {
+            OptimizedGrid grid = MakeGrid(4, 3, nodeWidth: 1f, nodeHeight: 2f, spacing: 0.5f);
+
+            for (int y = 0; y < 3; y++)
+            {
+                for (int x = 0; x < 4; x++)
+                {
+                    int v = grid.GetNodeIndex(x, y) * OptimizedGrid.VerticesPerNode;
+                    Vector3 quadCenter = (grid.Vertices[v] + grid.Vertices[v + 3]) * 0.5f;
+
+                    Assert.AreEqual(0f, Vector3.Distance(quadCenter, grid.GetNodeCenter(x, y)), 1e-5f, $"node {x},{y}");
+                }
+            }
+        }
+
+        [Test]
+        public void GetNodeCenter_Horizontal_LiesInXZPlane()
+        {
+            OptimizedGrid grid = MakeGrid(2, 2, horizontal: true);
+
+            int v = grid.GetNodeIndex(1, 1) * OptimizedGrid.VerticesPerNode;
+            Vector3 quadCenter = (grid.Vertices[v] + grid.Vertices[v + 3]) * 0.5f;
+            Vector3 center = grid.GetNodeCenter(1, 1);
+
+            Assert.AreEqual(0f, center.y);
+            Assert.AreEqual(0f, Vector3.Distance(quadCenter, center), 1e-5f);
+        }
+
+        [Test]
+        public void TryGetNode_RoundTripsThroughNodeCenter()
+        {
+            OptimizedGrid grid = MakeGrid(5, 4, spacing: 0.25f);
+
+            for (int y = 0; y < 4; y++)
+            {
+                for (int x = 0; x < 5; x++)
+                {
+                    Assert.IsTrue(grid.TryGetNode(grid.GetNodeCenter(x, y), out int rx, out int ry));
+                    Assert.AreEqual(x, rx);
+                    Assert.AreEqual(y, ry);
+                }
+            }
+        }
+
+        [Test]
+        public void TryGetNode_PositionInSpacingGap_MapsToPrecedingNode()
+        {
+            OptimizedGrid grid = MakeGrid(3, 3, nodeWidth: 1f, nodeHeight: 1f, spacing: 0.5f);
+
+            // Half a node to the right edge, then a quarter node into the gap.
+            Vector3 inGap = grid.GetNodeCenter(1, 1) + new Vector3(0.75f, 0f, 0f);
+
+            Assert.IsTrue(grid.TryGetNode(inGap, out int x, out int y));
+            Assert.AreEqual(1, x);
+            Assert.AreEqual(1, y);
+        }
+
+        [Test]
+        public void TryGetNode_OutsideGrid_ReturnsFalse()
+        {
+            OptimizedGrid grid = MakeGrid(3, 3);
+
+            Assert.IsFalse(grid.TryGetNode(new Vector3(100f, 0f, 0f), out _, out _));
+            Assert.IsFalse(grid.TryGetNode(new Vector3(0f, -100f, 0f), out _, out _));
+            Assert.IsFalse(grid.TryGetNode(grid.GetNodeCenter(-1, 0), out _, out _));
+        }
+
+        [Test]
         public void SetNodeColor_UpdatesOnlyThatNodesFourVertices()
         {
             OptimizedGrid grid = MakeGrid(3, 3);

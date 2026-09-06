@@ -19,6 +19,18 @@ namespace TOMICZ.Grid
         public bool IsHorizontal { get; private set; }
         public int NodeCount => GridWidth > 0 && GridHeight > 0 ? GridWidth * GridHeight : 0;
 
+        /// <summary>Distance from one node's origin to the next along each axis.</summary>
+        public float StepX => NodeWidth + Spacing;
+        public float StepY => NodeHeight + Spacing;
+
+        /// <summary>Total extent of the grid, not counting the spacing after the last node.</summary>
+        public float TotalWidth => GridWidth > 0 ? GridWidth * StepX - Spacing : 0f;
+        public float TotalHeight => GridHeight > 0 ? GridHeight * StepY - Spacing : 0f;
+
+        /// <summary>Local-space corner of node (0, 0). The grid is centered on the origin.</summary>
+        public float OriginX => -TotalWidth * 0.5f;
+        public float OriginY => -TotalHeight * 0.5f;
+
         public Vector3[] Vertices { get; private set; } = System.Array.Empty<Vector3>();
         public int[] Triangles { get; private set; } = System.Array.Empty<int>();
         public Color32[] Colors { get; private set; } = System.Array.Empty<Color32>();
@@ -74,6 +86,35 @@ namespace TOMICZ.Grid
             return y * GridWidth + x;
         }
 
+        /// <summary>
+        /// Local-space center of a node, in the XZ plane for horizontal grids and XY
+        /// otherwise. Not bounds-checked, so positions just outside the grid can be queried.
+        /// </summary>
+        public Vector3 GetNodeCenter(int x, int y)
+        {
+            float cx = OriginX + x * StepX + NodeWidth * 0.5f;
+            float cy = OriginY + y * StepY + NodeHeight * 0.5f;
+            return IsHorizontal ? new Vector3(cx, 0f, cy) : new Vector3(cx, cy, 0f);
+        }
+
+        /// <summary>
+        /// Maps a local-space position to node coordinates. Returns false outside the
+        /// grid. A position inside a spacing gap belongs to the node before the gap.
+        /// </summary>
+        public bool TryGetNode(Vector3 localPosition, out int x, out int y)
+        {
+            if (StepX <= 0f || StepY <= 0f)
+            {
+                x = y = -1;
+                return false;
+            }
+
+            float v = IsHorizontal ? localPosition.z : localPosition.y;
+            x = Mathf.FloorToInt((localPosition.x - OriginX) / StepX);
+            y = Mathf.FloorToInt((v - OriginY) / StepY);
+            return IsInBounds(x, y);
+        }
+
         public void SetNodeOccupied(int x, int y, bool occupied)
         {
             if (!IsInBounds(x, y)) return;
@@ -123,10 +164,10 @@ namespace TOMICZ.Grid
             if (nodeCount == 0)
                 return;
 
-            float stepX = NodeWidth + Spacing;
-            float stepY = NodeHeight + Spacing;
-            float startX = -(GridWidth * stepX - Spacing) / 2f;
-            float startY = -(GridHeight * stepY - Spacing) / 2f;
+            float stepX = StepX;
+            float stepY = StepY;
+            float startX = OriginX;
+            float startY = OriginY;
 
             for (int y = 0; y < GridHeight; y++)
             {
