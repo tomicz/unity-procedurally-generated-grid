@@ -73,9 +73,26 @@ In play mode, colors set through the component are uploaded to the mesh once at 
 
 `GetNeighbors(x, y, buffer, includeDiagonals, skipOccupied)` fills an `int[]` of node indices and returns the count, without allocating. Occupied nodes are skipped by default, and a diagonal is only offered when both orthogonal nodes beside it are free, so a path can never squeeze between two obstacles. `GetNodeCoordinates` turns an index back into x and y.
 
+## Pathfinding
+
+`GridPathfinder` runs A* over the occupancy array with a binary-heap open set. It sizes its buffers to the grid on the first search and reuses them, so later searches do not allocate.
+
+```csharp
+var pathfinder = new GridPathfinder(grid, allowDiagonals: true);
+var path = new List<int>();
+
+if (pathfinder.FindPath(0, 0, 20, 15, path))
+{
+    foreach (int node in path)
+        grid.SetNodeColor(node, Color.yellow);
+}
+```
+
+The path is a list of node indices from start to goal inclusive. `WasVisited(index)` and `LastVisitedCount` describe the nodes the search expanded, which is handy for drawing the explored area.
+
 ## Example scene
 
-`Examples/GridExampleScene` has a grid with a `GridPainter` component attached. Press Play and click or drag on the grid in the Game view to toggle nodes between free and occupied. Dragging paints or erases depending on the first node you touch. The painter picks nodes by intersecting the mouse ray with the grid's plane, so it needs no collider, and it uses the legacy Input Manager.
+`Examples/GridExampleScene` has a grid with a `GridPainter` component attached. Press Play and click or drag on the grid in the Game view to toggle nodes between free and occupied. Dragging paints or erases depending on the first node you touch. Right-click once to place a start marker and again to place the goal, and the `GridPathDemo` component draws the A* path in yellow with the explored area in grey, refreshing whenever you paint. Both scripts pick nodes by intersecting the mouse ray with the grid's plane, so no collider is needed, and both use the legacy Input Manager.
 
 # Running the tests
 

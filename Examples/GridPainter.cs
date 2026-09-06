@@ -4,8 +4,8 @@ namespace TOMICZ.Grid.Examples
 {
     /// <summary>
     /// Click or drag on the grid to toggle nodes between free and occupied.
-    /// Picks nodes by intersecting the mouse ray with the grid's own plane,
-    /// so no collider is needed. Uses the legacy Input Manager.
+    /// Picks nodes through GridMousePicker, so no collider is needed.
+    /// Uses the legacy Input Manager.
     /// </summary>
     [RequireComponent(typeof(GridGenerator))]
     public class GridPainter : MonoBehaviour
@@ -39,7 +39,7 @@ namespace TOMICZ.Grid.Examples
             }
 
             if (!Input.GetMouseButton(0)) return;
-            if (!TryPickNode(out int x, out int y)) return;
+            if (!GridMousePicker.TryPick(_grid, _camera, Input.mousePosition, out int x, out int y)) return;
             if (x == _lastX && y == _lastY) return;
 
             // The first node of a drag decides whether the drag paints or erases.
@@ -53,21 +53,6 @@ namespace TOMICZ.Grid.Examples
 
             _lastX = x;
             _lastY = y;
-        }
-
-        private bool TryPickNode(out int x, out int y)
-        {
-            Ray ray = _camera.ScreenPointToRay(Input.mousePosition);
-            Vector3 normal = _grid.IsHorizontal ? transform.up : transform.forward;
-            var plane = new Plane(normal, transform.position);
-
-            if (!plane.Raycast(ray, out float distance))
-            {
-                x = y = -1;
-                return false;
-            }
-
-            return _grid.WorldToNode(ray.GetPoint(distance), out x, out y);
         }
     }
 }
