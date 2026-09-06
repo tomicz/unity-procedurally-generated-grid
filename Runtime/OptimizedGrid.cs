@@ -8,6 +8,9 @@ namespace TOMICZ.Grid
         public const int VerticesPerNode = 4;
         public const int IndicesPerNode = 6;
 
+        /// <summary>Default node color. Color32 is 4 bytes per vertex where Color is 16.</summary>
+        public static readonly Color32 White = new Color32(255, 255, 255, 255);
+
         public int GridWidth { get; private set; }
         public int GridHeight { get; private set; }
         public float NodeWidth { get; private set; }
@@ -18,13 +21,13 @@ namespace TOMICZ.Grid
 
         public Vector3[] Vertices { get; private set; } = System.Array.Empty<Vector3>();
         public int[] Triangles { get; private set; } = System.Array.Empty<int>();
-        public Color[] Colors { get; private set; } = System.Array.Empty<Color>();
+        public Color32[] Colors { get; private set; } = System.Array.Empty<Color32>();
 
         /// <summary>Per-node occupancy, indexed by <c>y * GridWidth + x</c>.</summary>
         public bool[] Occupied { get; private set; }
 
         /// <summary>Per-node color, indexed by <c>y * GridWidth + x</c>.</summary>
-        public Color[] NodeColors { get; private set; }
+        public Color32[] NodeColors { get; private set; }
 
         /// <summary>
         /// Creates a grid. If <paramref name="occupied"/> or <paramref name="nodeColors"/>
@@ -33,7 +36,7 @@ namespace TOMICZ.Grid
         /// a rebuilt grid to keep node state across regeneration.
         /// </summary>
         public OptimizedGrid(int gridWidth, int gridHeight, float nodeWidth, float nodeHeight, float spacing,
-            bool[] occupied = null, Color[] nodeColors = null)
+            bool[] occupied = null, Color32[] nodeColors = null)
         {
             GridWidth = gridWidth;
             GridHeight = gridHeight;
@@ -53,10 +56,10 @@ namespace TOMICZ.Grid
             }
             else
             {
-                NodeColors = new Color[nodeCount];
+                NodeColors = new Color32[nodeCount];
                 for (int i = 0; i < nodeCount; i++)
                 {
-                    NodeColors[i] = Color.white;
+                    NodeColors[i] = White;
                 }
             }
         }
@@ -83,12 +86,12 @@ namespace TOMICZ.Grid
             return IsInBounds(x, y) && Occupied[GetNodeIndex(x, y)];
         }
 
-        public Color GetNodeColor(int x, int y)
+        public Color32 GetNodeColor(int x, int y)
         {
             return IsInBounds(x, y) ? NodeColors[GetNodeIndex(x, y)] : default;
         }
 
-        public void SetNodeColor(int x, int y, Color color)
+        public void SetNodeColor(int x, int y, Color32 color)
         {
             if (!IsInBounds(x, y)) return;
 
@@ -115,7 +118,7 @@ namespace TOMICZ.Grid
             int nodeCount = NodeCount;
             Vertices = new Vector3[nodeCount * VerticesPerNode];
             Triangles = new int[nodeCount * IndicesPerNode];
-            Colors = new Color[nodeCount * VerticesPerNode];
+            Colors = new Color32[nodeCount * VerticesPerNode];
 
             if (nodeCount == 0)
                 return;
@@ -151,7 +154,7 @@ namespace TOMICZ.Grid
                         Vertices[v + 3] = new Vector3(xPos + NodeWidth, yPos + NodeHeight, 0);
                     }
 
-                    Color color = NodeColors[nodeIndex];
+                    Color32 color = NodeColors[nodeIndex];
                     Colors[v] = color;
                     Colors[v + 1] = color;
                     Colors[v + 2] = color;

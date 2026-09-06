@@ -19,7 +19,7 @@ namespace TOMICZ.Grid
         // Node state survives regeneration and scene saves. The grid works on
         // these arrays directly, so there is a single source of truth.
         [SerializeField, HideInInspector] private bool[] _occupied;
-        [SerializeField, HideInInspector] private Color[] _nodeColors;
+        [SerializeField, HideInInspector] private Color32[] _nodeColors;
         [SerializeField, HideInInspector] private int _stateWidth;
         [SerializeField, HideInInspector] private int _stateHeight;
 
@@ -29,7 +29,7 @@ namespace TOMICZ.Grid
         public OptimizedGrid Grid => _grid;
         public bool IsHorizontal => _isHorizontal;
 
-        public void SetNodeColor(int x, int y, Color color)
+        public void SetNodeColor(int x, int y, Color32 color)
         {
             if (_grid == null) return;
 
@@ -37,7 +37,7 @@ namespace TOMICZ.Grid
             _grid.LoadMeshColors(_mesh);
         }
 
-        public Color GetNodeColor(int x, int y)
+        public Color32 GetNodeColor(int x, int y)
         {
             return _grid != null ? _grid.GetNodeColor(x, y) : default;
         }
@@ -141,7 +141,7 @@ namespace TOMICZ.Grid
         private void SyncNodeState()
         {
             _occupied = ResizeNodeState(_occupied, _stateWidth, _stateHeight, _gridWidth, _gridHeight, false);
-            _nodeColors = ResizeNodeState(_nodeColors, _stateWidth, _stateHeight, _gridWidth, _gridHeight, Color.white);
+            _nodeColors = ResizeNodeState(_nodeColors, _stateWidth, _stateHeight, _gridWidth, _gridHeight, OptimizedGrid.White);
             _stateWidth = _gridWidth;
             _stateHeight = _gridHeight;
         }
