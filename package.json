@@ -1,8 +1,8 @@
 {
   "name": "com.tomicz.procedural-grid",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "displayName": "Procedural Grid",
-  "description": "A procedurally generated grid rendered as a single vertex-colored mesh. Per-node occupancy and color state, no GameObject per cell, suitable for pathfinding visualisation.",
+  "description": "A procedurally generated grid rendered as a single vertex-colored mesh. One draw call at any size, per-node occupancy and color, built-in A* pathfinding, saveable layout assets and a custom inspector. Works in 2D and 3D.",
   "unity": "2021.3",
   "license": "MIT",
   "author": {
@@ -17,6 +17,9 @@
     "grid",
     "procedural",
     "mesh",
-    "pathfinding"
+    "pathfinding",
+    "astar",
+    "vertex-colors",
+    "unity"
   ]
 }
